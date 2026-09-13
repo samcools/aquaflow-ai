@@ -1,0 +1,1 @@
+Use `PYRNEO-LOGO-USAGE.md` as the canonical brand rule.
