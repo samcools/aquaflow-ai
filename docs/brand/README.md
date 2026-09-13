@@ -1,0 +1,1 @@
+AquaFlow branding uses the user-supplied Pyrneo wordmark as the single visible logo. See `PYRNEO-LOGO-USAGE.md`.
