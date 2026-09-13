@@ -8,7 +8,7 @@ const COLLECTIONS = new Set([
   'programmes', 'projects', 'milestones', 'workItems', 'comments', 'activities',
   'incidents', 'workOrders', 'assets', 'meters', 'zones', 'contractors', 'budgets',
   'expenditures', 'revenue', 'interventions', 'indicators', 'documents', 'evidence',
-  'notifications', 'approvals', 'risks', 'nrw', 'users'
+  'notifications', 'approvals', 'risks', 'nrw', 'users', 'imports'
 ]);
 
 function clone(value) {
