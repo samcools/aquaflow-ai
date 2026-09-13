@@ -1,0 +1,52 @@
+/* Final AquaFlow product polish: compact recovery panel, single-logo branding,
+   distinct risk/status colours, and neural voice settings UI. */
+
+/* One logo only: Pyrneo is the primary mark; AquaFlow remains product text. */
+.login-aquaflow-logo,.aquaflow-brandmark,.product-lockup .aqua-symbol,.aquaflow-name .aqua-symbol{display:none!important}
+.login-logo{width:250px!important;max-width:72%!important;margin-bottom:18px!important;background:transparent!important}
+.sidebar-logo{background:transparent!important}
+.product-lockup{gap:0!important}.aquaflow-name{gap:0!important}
+
+/* Do not stretch the recovery chain to match a taller Ayanda card. */
+.command-visual-grid{align-items:start!important}
+.recovery-pulse-panel{min-height:0!important;height:auto!important;align-self:start!important;padding-bottom:16px!important}
+.recovery-pulse-panel .panel-head{margin-bottom:4px!important}
+.recovery-chain{padding:12px 0 14px!important}
+.recovery-visual{margin-top:2px!important}
+.visual-kpi{padding:12px!important}
+.visual-kpi strong{margin:2px 0!important}
+
+/* Risk and lifecycle status colours. */
+.chip.critical,.chip.severe,.chip.escalated,.chip.failed,.chip.rejected,.chip.blocked{color:#ffd9df!important;background:rgba(255,70,93,.14)!important;border:1px solid rgba(255,90,112,.35)!important}
+.chip.high,.chip.at-risk,.chip.delayed,.chip.overdue,.chip.attention{color:#ffd9a6!important;background:rgba(255,157,66,.14)!important;border:1px solid rgba(255,171,82,.34)!important}
+.chip.medium,.chip.watch,.chip.pending,.chip.review,.chip.awaiting-review{color:#ffedaa!important;background:rgba(244,199,99,.13)!important;border:1px solid rgba(244,199,99,.34)!important}
+.chip.low,.chip.on-track,.chip.healthy,.chip.approved,.chip.completed,.chip.complete,.chip.closed,.chip.verified,.chip.good{color:#b9f3d6!important;background:rgba(66,205,139,.13)!important;border:1px solid rgba(91,222,159,.33)!important}
+.chip.open,.chip.active,.chip.in-progress,.chip.dispatched,.chip.assigned{color:#bee3ff!important;background:rgba(74,167,239,.14)!important;border:1px solid rgba(74,167,239,.34)!important}
+.chip.mitigating,.chip.repair-in-progress,.chip.verifying{color:#bffbf6!important;background:rgba(32,208,203,.13)!important;border:1px solid rgba(32,208,203,.34)!important}
+.chip.accepted,.chip.planned,.chip.proposed{color:#ded4ff!important;background:rgba(126,101,255,.14)!important;border:1px solid rgba(150,126,255,.34)!important}
+.chip.cancelled,.chip.archived,.chip.inactive{color:#c6d0da!important;background:rgba(150,165,181,.10)!important;border:1px solid rgba(160,175,190,.25)!important}
+
+.table-wrap tbody tr:has(.chip.critical),.table-wrap tbody tr:has(.chip.escalated){box-shadow:inset 3px 0 #ff5268}
+.table-wrap tbody tr:has(.chip.high),.table-wrap tbody tr:has(.chip.at-risk),.table-wrap tbody tr:has(.chip.delayed){box-shadow:inset 3px 0 #ff9c42}
+.table-wrap tbody tr:has(.chip.medium),.table-wrap tbody tr:has(.chip.pending){box-shadow:inset 3px 0 #f4c763}
+.table-wrap tbody tr:has(.chip.low),.table-wrap tbody tr:has(.chip.on-track),.table-wrap tbody tr:has(.chip.completed){box-shadow:inset 3px 0 #55d99d}
+
+/* OpenAI / neural Ayanda settings. */
+.ai-settings-button{display:inline-flex;align-items:center;gap:6px}
+.ai-settings-dialog{width:min(92vw,620px);color:var(--text);background:#0c2138;border:1px solid var(--line);border-radius:18px;padding:0;box-shadow:var(--shadow)}
+.ai-settings-dialog::backdrop{background:rgba(1,10,20,.72);backdrop-filter:blur(3px)}
+.ai-settings-dialog form{padding:20px}.ai-settings-dialog h2{margin:0}
+.ai-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.ai-settings-grid .span-2{grid-column:1/-1}
+.ai-key-note{font-size:11px;color:var(--muted);margin-top:4px}.ai-provider-status{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025)}
+.ai-provider-status i{width:9px;height:9px;border-radius:50%;background:#8294a6}.ai-provider-status.configured i{background:var(--good);box-shadow:0 0 0 4px rgba(110,215,167,.12)}
+.neural-voice-hint{font-size:10px;color:var(--accent2);margin-top:4px}
+
+/* The voice selector is always visible and compact inside Ayanda. */
+.voice-picker{grid-template-columns:minmax(130px,.8fr) minmax(180px,1.2fr) auto!important}
+#voiceSelect{min-width:0}
+
+@media(max-width:760px){
+  .ai-settings-grid{grid-template-columns:1fr}.ai-settings-grid .span-2{grid-column:auto}
+  .voice-picker{grid-template-columns:1fr!important}
+  .recovery-visual{grid-template-columns:1fr!important}
+}

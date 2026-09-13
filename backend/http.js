@@ -8,6 +8,7 @@ const { authMiddleware } = require('./lib/auth');
 const { hasPermission } = require('./lib/policy');
 const { parseCsv, schemaFor, validateRows } = require('./lib/csv');
 const { buildVoiceRouter } = require('./voice-router');
+const { buildOpenAIRouter } = require('./openai-router');
 
 const httpApp = express();
 const COOKIE_NAME = 'aquaflow_session';
@@ -104,14 +105,18 @@ httpApp.get('/api/imports/history', auth, (req, res) => {
   res.json(store.list('imports', req.user.tenantId));
 });
 
+// OpenAI query/TTS settings are resolved per authenticated session and never
+// expose API keys to the browser after submission. Commands remain governed
+// by the dedicated voice router below.
+httpApp.use(buildOpenAIRouter({ store, tokenSecret: config.tokenSecret }));
 httpApp.use(buildVoiceRouter({ store, tokenSecret: config.tokenSecret }));
 
 function serveEnhancedIndex(_req, res, next) {
   try {
     const indexPath = path.join(FRONTEND_DIR, 'index.html');
     let html = fs.readFileSync(indexPath, 'utf8');
-    html = html.replace('</head>', '  <link rel="stylesheet" href="/voice-selector.css">\n</head>');
-    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n  <script src="/first-aquaflow-design.js"></script>\n</body>');
+    html = html.replace('</head>', '  <link rel="stylesheet" href="/voice-selector.css">\n  <link rel="stylesheet" href="/product-polish.css">\n</head>');
+    html = html.replace('</body>', '  <script src="/openai-voice.js" defer></script>\n  <script src="/original-dashboard.js" defer></script>\n  <script src="/first-aquaflow-design.js" defer></script>\n</body>');
     res.type('html').send(html);
   } catch (error) {
     next(error);

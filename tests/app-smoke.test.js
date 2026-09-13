@@ -45,11 +45,13 @@ test('health endpoint starts and identifies AquaFlow', async () => {
   assert.equal(body.service, 'AquaFlow AI');
 });
 
-test('root page uses the first AquaFlow design rather than Project Guardian overrides', async () => {
+test('root page keeps first AquaFlow design and injects neural voice/product polish', async () => {
   const response = await fetch(`${baseUrl}/`);
   assert.equal(response.status, 200);
   const body = await response.text();
   assert.match(body, /styles\.css/);
+  assert.match(body, /product-polish\.css/);
+  assert.match(body, /openai-voice\.js/);
   assert.match(body, /original-dashboard\.js/);
   assert.match(body, /first-aquaflow-design\.js/);
   assert.doesNotMatch(body, /original-dashboard\.css/);
@@ -57,25 +59,35 @@ test('root page uses the first AquaFlow design rather than Project Guardian over
   assert.match(body, /AquaFlow AI/);
 });
 
-test('AquaFlow logo, transparent Pyrneo assets and unified voice controller are served', async () => {
-  const [logoResponse, pyrneoResponse, voiceResponse, designResponse] = await Promise.all([
-    fetch(`${baseUrl}/aquaflow-logo.svg`),
-    fetch(`${baseUrl}/pyrneo-logo.svg`),
+test('transparent Pyrneo mark, unified Ayanda controller and neural voice bridge are served', async () => {
+  const [pyrneoResponse, voiceResponse, neuralResponse, designResponse, polishResponse] = await Promise.all([
+    fetch(`${baseUrl}/pyrneo-logo-white.svg`),
     fetch(`${baseUrl}/original-dashboard.js`),
-    fetch(`${baseUrl}/first-aquaflow-design.js`)
+    fetch(`${baseUrl}/openai-voice.js`),
+    fetch(`${baseUrl}/first-aquaflow-design.js`),
+    fetch(`${baseUrl}/product-polish.css`)
   ]);
-  assert.equal(logoResponse.status, 200);
   assert.equal(pyrneoResponse.status, 200);
   assert.equal(voiceResponse.status, 200);
+  assert.equal(neuralResponse.status, 200);
   assert.equal(designResponse.status, 200);
-  assert.match(await logoResponse.text(), /AquaFlow/);
+  assert.equal(polishResponse.status, 200);
   assert.match(await pyrneoResponse.text(), /Pyrneo/);
   const voiceBody = await voiceResponse.text();
   assert.match(voiceBody, /Hey, Ayanda/);
   assert.match(voiceBody, /ayanda-bot-icon/);
-  assert.match(voiceBody, /speechSynthesis\.cancel/);
+  const neuralBody = await neuralResponse.text();
+  assert.match(neuralBody, /AI & Voice Settings/);
+  assert.match(neuralBody, /assistant\/speech/);
   const designBody = await designResponse.text();
-  assert.match(designBody, /Go to AquaFlow home/);
+  assert.match(designBody, /pyrneo-logo-white\.svg/);
+  assert.doesNotMatch(designBody, /aquaflow-logo\.svg/);
+  const polishBody = await polishResponse.text();
+  assert.match(polishBody, /recovery-pulse-panel/);
+  assert.match(polishBody, /chip\.critical/);
+  assert.match(polishBody, /chip\.high/);
+  assert.match(polishBody, /chip\.medium/);
+  assert.match(polishBody, /chip\.low/);
 });
 
 test('demo login returns token and HttpOnly same-site session cookie', async () => {
