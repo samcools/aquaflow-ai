@@ -1,0 +1,41 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+dist/
+build/
+coverage/
+.cache/
+
+# Runtime data
+*.log
+logs/
+uploads/
+storage/private/
+tmp/
+*.sqlite
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local tooling
+*.local
