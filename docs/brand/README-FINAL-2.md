@@ -1,0 +1,1 @@
+Canonical brand rule: use supplied Pyrneo wordmark only.
