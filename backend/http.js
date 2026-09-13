@@ -106,12 +106,14 @@ httpApp.get('/api/imports/history', auth, (req, res) => {
 
 httpApp.use(buildVoiceRouter({ store, tokenSecret: config.tokenSecret }));
 
+// The original AquaFlow UI is the base frontend/styles.css + index.html design.
+// Do not inject the later Project Guardian visual overrides. Only functional
+// Ayanda behavior and transparent-brand/home-navigation enhancements are added.
 function serveEnhancedIndex(_req, res, next) {
   try {
     const indexPath = path.join(FRONTEND_DIR, 'index.html');
     let html = fs.readFileSync(indexPath, 'utf8');
-    html = html.replace('</head>', '  <link rel="stylesheet" href="/original-dashboard.css">\n</head>');
-    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n  <script src="/original-layout.js"></script>\n</body>');
+    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n  <script src="/first-aquaflow-design.js"></script>\n</body>');
     res.type('html').send(html);
   } catch (error) {
     next(error);

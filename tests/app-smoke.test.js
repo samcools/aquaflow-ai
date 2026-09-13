@@ -45,27 +45,37 @@ test('health endpoint starts and identifies AquaFlow', async () => {
   assert.equal(body.service, 'AquaFlow AI');
 });
 
-test('root page injects original-dashboard and unified Ayanda assets', async () => {
+test('root page uses the first AquaFlow design rather than Project Guardian overrides', async () => {
   const response = await fetch(`${baseUrl}/`);
   assert.equal(response.status, 200);
   const body = await response.text();
-  assert.match(body, /original-dashboard\.css/);
+  assert.match(body, /styles\.css/);
   assert.match(body, /original-dashboard\.js/);
+  assert.match(body, /first-aquaflow-design\.js/);
+  assert.doesNotMatch(body, /original-dashboard\.css/);
+  assert.doesNotMatch(body, /original-layout\.js/);
   assert.match(body, /AquaFlow AI/);
 });
 
-test('AquaFlow logo and unified voice controller are served', async () => {
-  const [logoResponse, voiceResponse] = await Promise.all([
+test('AquaFlow logo, transparent Pyrneo assets and unified voice controller are served', async () => {
+  const [logoResponse, pyrneoResponse, voiceResponse, designResponse] = await Promise.all([
     fetch(`${baseUrl}/aquaflow-logo.svg`),
-    fetch(`${baseUrl}/original-dashboard.js`)
+    fetch(`${baseUrl}/pyrneo-logo.svg`),
+    fetch(`${baseUrl}/original-dashboard.js`),
+    fetch(`${baseUrl}/first-aquaflow-design.js`)
   ]);
   assert.equal(logoResponse.status, 200);
+  assert.equal(pyrneoResponse.status, 200);
   assert.equal(voiceResponse.status, 200);
+  assert.equal(designResponse.status, 200);
   assert.match(await logoResponse.text(), /AquaFlow/);
+  assert.match(await pyrneoResponse.text(), /Pyrneo/);
   const voiceBody = await voiceResponse.text();
   assert.match(voiceBody, /Hey, Ayanda/);
   assert.match(voiceBody, /ayanda-bot-icon/);
   assert.match(voiceBody, /speechSynthesis\.cancel/);
+  const designBody = await designResponse.text();
+  assert.match(designBody, /Go to AquaFlow home/);
 });
 
 test('demo login returns token and HttpOnly same-site session cookie', async () => {
@@ -81,7 +91,7 @@ test('demo login returns token and HttpOnly same-site session cookie', async () 
   assert.match(cookie.toLowerCase(), /samesite=strict/);
 });
 
-test('authenticated executive can retrieve tenant-scoped dashboard', async () => {
+test('authenticated executive can retrieve a full synthetic AquaFlow portfolio', async () => {
   const loginResponse = await login('Executive');
   const { token } = await loginResponse.json();
   const response = await fetch(`${baseUrl}/api/dashboard`, { headers: { authorization: `Bearer ${token}` } });
@@ -89,6 +99,7 @@ test('authenticated executive can retrieve tenant-scoped dashboard', async () =>
   const body = await response.json();
   assert.equal(body.synthetic, true);
   assert.ok(Array.isArray(body.projects));
+  assert.ok(body.projects.length >= 10);
   assert.ok(Array.isArray(body.incidents));
   assert.ok(body.summary);
 });
