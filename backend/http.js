@@ -106,12 +106,15 @@ httpApp.get('/api/imports/history', auth, (req, res) => {
 
 httpApp.use(buildVoiceRouter({ store, tokenSecret: config.tokenSecret }));
 
+// The first AquaFlow design lives in frontend/styles.css. Do not inject the
+// later Project Guardian override layers. We only add the functional Ayanda
+// enhancement layer and its compact voice-picker styling.
 function serveEnhancedIndex(_req, res, next) {
   try {
     const indexPath = path.join(FRONTEND_DIR, 'index.html');
     let html = fs.readFileSync(indexPath, 'utf8');
-    html = html.replace('</head>', '  <link rel="stylesheet" href="/original-dashboard.css">\n</head>');
-    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n  <script src="/original-layout.js"></script>\n</body>');
+    html = html.replace('</head>', '  <link rel="stylesheet" href="/voice-selector.css">\n</head>');
+    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n</body>');
     res.type('html').send(html);
   } catch (error) {
     next(error);
