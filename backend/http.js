@@ -5,6 +5,7 @@ const { app, store, config } = require('./app');
 const { authMiddleware } = require('./lib/auth');
 const { hasPermission } = require('./lib/policy');
 const { parseCsv, schemaFor, validateRows } = require('./lib/csv');
+const { buildVoiceRouter } = require('./voice-router');
 
 const httpApp = express();
 const COOKIE_NAME = 'aquaflow_session';
@@ -24,9 +25,7 @@ function parseCookies(header) {
 
 httpApp.use((req, res, next) => {
   const cookies = parseCookies(req.headers.cookie);
-  if (!req.headers.authorization && cookies[COOKIE_NAME]) {
-    req.headers.authorization = `Bearer ${cookies[COOKIE_NAME]}`;
-  }
+  if (!req.headers.authorization && cookies[COOKIE_NAME]) req.headers.authorization = `Bearer ${cookies[COOKIE_NAME]}`;
 
   const originalJson = res.json.bind(res);
   res.json = body => {
@@ -99,11 +98,7 @@ httpApp.post('/api/imports/csv/apply', auth, csvBody, (req, res) => {
   const invalid = validation.filter(row => !row.valid);
   const allowValidOnly = String(req.query.mode || '').toLowerCase() === 'valid-only';
   if (invalid.length && !allowValidOnly) {
-    return res.status(409).json({
-      error: 'Import was not applied because one or more rows failed validation.',
-      invalidRows: invalid.length,
-      sample: invalid.slice(0, 25)
-    });
+    return res.status(409).json({ error: 'Import was not applied because one or more rows failed validation.', invalidRows: invalid.length, sample: invalid.slice(0, 25) });
   }
   if (!valid.length) return res.status(400).json({ error: 'No valid records are available to import.' });
 
@@ -118,14 +113,7 @@ httpApp.post('/api/imports/csv/apply', auth, csvBody, (req, res) => {
     importedAt: new Date().toISOString()
   }, req.user, 'import');
 
-  res.status(201).json({
-    importId: importRecord.id,
-    resource,
-    imported: created.length,
-    rejected: invalid.length,
-    ignoredColumns: unknownHeaders,
-    createdIds: created.map(record => record.id)
-  });
+  res.status(201).json({ importId:importRecord.id, resource, imported:created.length, rejected:invalid.length, ignoredColumns:unknownHeaders, createdIds:created.map(record => record.id) });
 });
 
 httpApp.get('/api/imports/history', auth, (req, res) => {
@@ -135,6 +123,10 @@ httpApp.get('/api/imports/history', auth, (req, res) => {
   res.json(store.list('imports', req.user.tenantId));
 });
 
+// Evaluate expanded voice commands before the core app. Commands that are not
+// recognised here fall through to the original assistant handler, preserving a
+// single assistant endpoint and the existing create/comment/navigation grammar.
+httpApp.use(buildVoiceRouter({ store, tokenSecret: config.tokenSecret }));
 httpApp.use(app);
 
 module.exports = { httpApp, parseCookies, COOKIE_NAME };
