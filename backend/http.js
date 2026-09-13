@@ -49,9 +49,6 @@ httpApp.use((req, res, next) => {
   next();
 });
 
-// Parse normal API JSON at the outer gateway so pre-app routers such as the
-// governed voice command layer receive the same request body as the core app.
-// express.json ignores text/csv, so the CSV ingestion parser below is unaffected.
 httpApp.use(express.json({ limit:'1mb' }));
 
 const csvBody = express.text({ type: ['text/csv', 'text/plain'], limit: '2mb' });
@@ -109,16 +106,12 @@ httpApp.get('/api/imports/history', auth, (req, res) => {
 
 httpApp.use(buildVoiceRouter({ store, tokenSecret: config.tokenSecret }));
 
-// Serve the validated base UI with the original dashboard restoration and
-// the single global Ayanda controller injected after the base bundle. The
-// base index remains untouched, making the enhancement reversible and easy
-// to test independently.
 function serveEnhancedIndex(_req, res, next) {
   try {
     const indexPath = path.join(FRONTEND_DIR, 'index.html');
     let html = fs.readFileSync(indexPath, 'utf8');
     html = html.replace('</head>', '  <link rel="stylesheet" href="/original-dashboard.css">\n</head>');
-    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n</body>');
+    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n  <script src="/original-layout.js"></script>\n</body>');
     res.type('html').send(html);
   } catch (error) {
     next(error);
