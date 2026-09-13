@@ -1,10 +1,14 @@
 'use strict';
 
 const express = require('express');
-const { app } = require('./app');
+const { app, store, config } = require('./app');
+const { authMiddleware } = require('./lib/auth');
+const { hasPermission } = require('./lib/policy');
+const { parseCsv, schemaFor, validateRows } = require('./lib/csv');
 
 const httpApp = express();
 const COOKIE_NAME = 'aquaflow_session';
+const auth = authMiddleware(config.tokenSecret);
 
 function parseCookies(header) {
   const cookies = {};
@@ -41,6 +45,94 @@ httpApp.use((req, res, next) => {
     return originalJson(body);
   };
   next();
+});
+
+const csvBody = express.text({ type: ['text/csv', 'text/plain'], limit: '2mb' });
+
+function importContext(req, res) {
+  try {
+    const resource = String(req.query.resource || '').trim();
+    const schema = schemaFor(resource);
+    if (!hasPermission(req.user, schema.permission)) {
+      res.status(403).json({ error: 'You are not authorised to import this resource.' });
+      return null;
+    }
+    const parsed = parseCsv(req.body);
+    if (!parsed.headers.length) {
+      res.status(400).json({ error: 'CSV file is empty or has no header row.' });
+      return null;
+    }
+    const unknownHeaders = parsed.headers.filter(header => !schema.allowed.includes(header));
+    const existing = store.list(resource, req.user.tenantId);
+    const validation = validateRows(resource, parsed.rows, existing);
+    return { resource, schema, parsed, validation, unknownHeaders };
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'CSV import validation failed.' });
+    return null;
+  }
+}
+
+httpApp.post('/api/imports/csv/preview', auth, csvBody, (req, res) => {
+  const context = importContext(req, res);
+  if (!context) return;
+  const { resource, parsed, validation, unknownHeaders } = context;
+  const valid = validation.filter(row => row.valid);
+  const invalid = validation.filter(row => !row.valid);
+  res.json({
+    resource,
+    headers: parsed.headers,
+    totalRows: validation.length,
+    validRows: valid.length,
+    invalidRows: invalid.length,
+    unknownHeaders,
+    sample: validation.slice(0, 25),
+    canApply: invalid.length === 0 && validation.length > 0,
+    note: unknownHeaders.length ? 'Unknown columns will be ignored during import.' : 'All columns are recognised.'
+  });
+});
+
+httpApp.post('/api/imports/csv/apply', auth, csvBody, (req, res) => {
+  const context = importContext(req, res);
+  if (!context) return;
+  const { resource, schema, validation, unknownHeaders } = context;
+  const valid = validation.filter(row => row.valid);
+  const invalid = validation.filter(row => !row.valid);
+  const allowValidOnly = String(req.query.mode || '').toLowerCase() === 'valid-only';
+  if (invalid.length && !allowValidOnly) {
+    return res.status(409).json({
+      error: 'Import was not applied because one or more rows failed validation.',
+      invalidRows: invalid.length,
+      sample: invalid.slice(0, 25)
+    });
+  }
+  if (!valid.length) return res.status(400).json({ error: 'No valid records are available to import.' });
+
+  const created = valid.map(entry => store.create(resource, entry.record, req.user, schema.prefix));
+  const importRecord = store.create('imports', {
+    resource,
+    format: 'csv',
+    importedCount: created.length,
+    rejectedCount: invalid.length,
+    ignoredColumns: unknownHeaders,
+    status: invalid.length ? 'completed-with-rejections' : 'completed',
+    importedAt: new Date().toISOString()
+  }, req.user, 'import');
+
+  res.status(201).json({
+    importId: importRecord.id,
+    resource,
+    imported: created.length,
+    rejected: invalid.length,
+    ignoredColumns: unknownHeaders,
+    createdIds: created.map(record => record.id)
+  });
+});
+
+httpApp.get('/api/imports/history', auth, (req, res) => {
+  if (!hasPermission(req.user, 'audit.read') && !hasPermission(req.user, 'project.create') && !hasPermission(req.user, 'meter.create')) {
+    return res.status(403).json({ error: 'You are not authorised to view import history.' });
+  }
+  res.json(store.list('imports', req.user.tenantId));
 });
 
 httpApp.use(app);
