@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,6 +30,9 @@ jobs:
 
       - name: Automated tests
         run: npm test
+
+      - name: Build container image
+        run: docker build -t aquaflow-ai:ci .
 
       - name: Prevent committed runtime data
         shell: bash
