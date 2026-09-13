@@ -5,40 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#061427">
   <meta name="description" content="AquaFlow AI — Turning Municipal Water Recovery Plans into Accountable Delivery">
-  <title>AquaFlow AI</title>
+  <title>AquaFlow AI · Pyrneo</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <div id="loginView" class="login-shell">
     <section class="login-card" aria-labelledby="loginTitle">
-      <div class="brand-mark" aria-hidden="true">A</div>
-      <p class="eyebrow">PYRNEO · MUNICIPAL INTELLIGENCE</p>
-      <h1 id="loginTitle">AquaFlow AI</h1>
+      <img class="pyrneo-logo login-logo" src="/pyrneo-logo.webp" alt="Pyrneo">
+      <div class="product-lockup"><span class="aqua-symbol" aria-hidden="true">◉</span><div><p class="eyebrow">MUNICIPAL INTELLIGENCE</p><h1 id="loginTitle">AquaFlow AI</h1></div></div>
       <p class="subtitle">Turning Municipal Water Recovery Plans into Accountable Delivery</p>
       <form id="loginForm" class="stack">
         <label>Email<input id="email" type="email" autocomplete="username" value="demo@aquaflow.local" required></label>
-        <label>Password<input id="password" type="password" autocomplete="current-password" placeholder="Demo password from local environment" required></label>
-        <label>Demo role<select id="roleSelect"><option>System Administrator</option><option>Executive</option><option>Programme Manager</option><option>Project Manager</option><option>Engineer</option><option>Field Technician</option><option>Finance User</option><option>Revenue Assurance User</option><option>Auditor</option><option>Read-Only Oversight User</option></select></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" placeholder="Demo password" required></label>
+        <label>Demo role<select id="roleSelect"><option>System Administrator</option><option>Executive</option><option>Programme Manager</option><option>Project Manager</option><option>Engineer</option><option>Field Technician</option><option>Finance User</option><option>Revenue Assurance User</option><option>Contractor</option><option>Auditor</option><option>Read-Only Oversight User</option></select></label>
         <button class="btn primary" type="submit">Sign in securely</button>
       </form>
       <p id="loginMessage" class="form-message" role="alert"></p>
-      <p class="microcopy">Hackathon demonstration environment. Synthetic data only. Role selection demonstrates server-side RBAC.</p>
+      <p class="microcopy">Hackathon demonstration environment · Synthetic municipal data only · Server-side role controls</p>
     </section>
   </div>
 
   <div id="appView" class="app-shell" hidden>
     <aside class="sidebar" aria-label="Primary navigation">
-      <div class="brand-row"><div class="brand-mark small">A</div><div><strong>AquaFlow AI</strong><span>Powered by Pyrneo</span></div></div>
+      <div class="brand-stack">
+        <img class="pyrneo-logo sidebar-logo" src="/pyrneo-logo.webp" alt="Pyrneo">
+        <div class="aquaflow-name"><span class="aqua-symbol small" aria-hidden="true">◉</span><div><strong>AquaFlow AI</strong><span>Municipal Water Recovery</span></div></div>
+      </div>
       <nav id="primaryNav">
-        <button class="nav-item active" data-section="command">Command Centre</button>
-        <button class="nav-item" data-section="delivery">Delivery</button>
-        <button class="nav-item" data-section="operations">Water Operations</button>
-        <button class="nav-item" data-section="assets">Assets & Meters</button>
-        <button class="nav-item" data-section="revenue">Revenue & Finance</button>
-        <button class="nav-item" data-section="governance">Governance</button>
-        <button class="nav-item" data-section="documents">Evidence</button>
-        <button class="nav-item" data-section="audit">Audit</button>
+        <button class="nav-item active" data-section="command"><span>⌂</span>Command Centre</button>
+        <button class="nav-item" data-section="delivery"><span>◫</span>Delivery</button>
+        <button class="nav-item" data-section="operations"><span>≋</span>Water Operations</button>
+        <button class="nav-item" data-section="assets"><span>◇</span>Assets & Meters</button>
+        <button class="nav-item" data-section="revenue"><span>R</span>Revenue & Finance</button>
+        <button class="nav-item" data-section="governance"><span>✓</span>Governance</button>
+        <button class="nav-item" data-section="documents"><span>▤</span>Evidence</button>
+        <button class="nav-item" data-section="audit"><span>◎</span>Audit</button>
       </nav>
+      <button id="sidebarAgentButton" class="agent-sidebar-button" type="button"><span class="mini-orb"><i></i></span><span><strong>Ask Ayanda</strong><small>Voice & hands-free control</small></span></button>
       <div class="sidebar-footer">
         <div class="tenant"><span class="status-dot"></span><div><strong id="tenantName">Demo Metro</strong><small id="userRole">Synthetic tenant</small></div></div>
         <button id="logoutButton" class="btn ghost">Sign out</button>
@@ -47,8 +50,9 @@
 
     <main class="main">
       <header class="topbar">
-        <div><p class="eyebrow">MUNICIPAL WATER RECOVERY</p><h1 id="pageTitle">Executive Command Centre</h1></div>
+        <div><p class="eyebrow">MUNICIPAL WATER RECOVERY</p><h1 id="pageTitle">Executive Command Centre</h1><p id="pageSubtitle" class="page-subtitle">Live operational view of delivery, loss reduction and revenue recovery.</p></div>
         <div class="top-actions">
+          <button id="explainPageButton" class="btn ghost agent-trigger">◉ Explain this page</button>
           <button id="globalSearchButton" class="btn ghost">Search</button>
           <span id="notificationBadge" class="badge">0 alerts</span>
           <span id="dataBadge" class="badge info">Synthetic data</span>
@@ -62,63 +66,94 @@
 
       <section id="commandSection" class="section active-section">
         <div id="metricGrid" class="metric-grid"></div>
+        <div class="command-visual-grid">
+          <section class="panel recovery-pulse-panel">
+            <div class="panel-head"><div><p class="eyebrow">RECOVERY PULSE</p><h2>Water service recovery chain</h2></div><span class="badge info">Evidence linked</span></div>
+            <div class="recovery-chain" aria-label="Water recovery process">
+              <div class="flow-node"><span>01</span><strong>Detect</strong><small>Loss & anomaly</small></div><div class="flow-link"></div>
+              <div class="flow-node"><span>02</span><strong>Prioritise</strong><small>Impact & risk</small></div><div class="flow-link"></div>
+              <div class="flow-node"><span>03</span><strong>Execute</strong><small>Work order</small></div><div class="flow-link"></div>
+              <div class="flow-node"><span>04</span><strong>Verify</strong><small>Evidence</small></div><div class="flow-link"></div>
+              <div class="flow-node"><span>05</span><strong>Recover</strong><small>Water & revenue</small></div>
+            </div>
+            <div id="recoveryVisual" class="recovery-visual"></div>
+          </section>
+          <section class="panel ayanda-spotlight">
+            <div class="agent-orb large" aria-hidden="true"><div class="orb-core">A</div><div class="waveform"><i></i><i></i><i></i><i></i><i></i></div></div>
+            <p class="eyebrow">AYANDA · VOICE COPILOT</p><h2>Ask, explain, navigate or update</h2>
+            <p class="muted">Use natural language to understand status, open any workspace, explain the current page, create records or update authorised records.</p>
+            <div class="prompt-grid"><button class="prompt-chip" data-agent-prompt="What needs executive attention today?">Executive briefing</button><button class="prompt-chip" data-agent-prompt="What is causing the greatest water loss?">Greatest water loss</button><button class="prompt-chip" data-agent-prompt="Explain this page">Explain this page</button><button class="prompt-chip" data-agent-prompt="Open incidents">Open incidents</button></div>
+            <button id="openAgentButton" class="btn primary wide-button" type="button">Open Ayanda Voice Control</button>
+          </section>
+        </div>
         <div class="content-grid two-one">
           <section class="panel"><div class="panel-head"><div><p class="eyebrow">PRIORITISED RESPONSE</p><h2>Incidents requiring attention</h2></div><button class="text-button" data-go="operations">Open operations</button></div><div id="priorityIncidents"></div></section>
-          <section class="panel assistant-panel">
-            <div class="panel-head"><div><p class="eyebrow">AYANDA · AI ASSISTANT</p><h2>Executive briefing & actions</h2></div><span id="voiceState" class="badge">Ready</span></div>
-            <div id="assistantConversation" class="conversation" aria-live="polite"><div class="assistant-bubble">Ask about water loss, delivery, revenue, risks, approvals or audit activity. You can also say commands such as “open incidents”, “create project …” or “add milestone … to …”.</div></div>
-            <form id="assistantForm" class="assistant-input"><input id="assistantQuery" aria-label="Ask AquaFlow" placeholder="What needs executive attention today?" autocomplete="off"><button id="micButton" type="button" class="icon-btn" aria-label="Start voice input">🎙</button><button type="submit" class="btn primary">Ask</button></form>
-            <div class="voice-controls"><label>Language<select id="languageSelect"><option value="en-ZA">English</option><option value="af-ZA">Afrikaans</option><option value="zu-ZA">isiZulu</option><option value="xh-ZA">isiXhosa</option><option value="st-ZA">Sesotho</option><option value="tn-ZA">Setswana</option><option value="nso-ZA">Sepedi</option><option value="ts-ZA">itsonga</option><option value="ve-ZA">Tshivenda</option><option value="ss-ZA">siSwati</option><option value="nr-ZA">isiNdebele</option></select></label><label class="switch"><input id="speakToggle" type="checkbox" checked><span>Speak responses</span></label></div>
-          </section>
+          <section class="panel"><div class="panel-head"><div><p class="eyebrow">DECISION SUPPORT</p><h2>Management focus</h2></div><button class="text-button prompt-chip-inline" data-agent-prompt="Give me a concise management briefing">Ask Ayanda</button></div><div id="managementFocus"></div></section>
         </div>
         <div class="content-grid thirds"><section class="panel"><p class="eyebrow">DELIVERY</p><h2>Programme health</h2><div id="projectPreview"></div></section><section class="panel"><p class="eyebrow">WATER BALANCE</p><h2>NRW position</h2><div id="nrwPreview"></div></section><section class="panel"><p class="eyebrow">ACCOUNTABILITY</p><h2>Recent activity</h2><div id="activityPreview"></div></section></div>
       </section>
 
       <section id="deliverySection" class="section" hidden>
-        <div class="section-toolbar"><div><p class="eyebrow">STRATEGY → EXECUTION</p><h2>Programmes, projects, milestones & work items</h2></div><div><button class="btn ghost export-btn" data-export="projects">Export projects</button><button class="btn primary create-btn" data-resource="projects">+ Project</button></div></div>
+        <div class="section-toolbar"><div><p class="eyebrow">STRATEGY → EXECUTION</p><h2>Programmes, projects, milestones & work items</h2></div><div><button class="btn ghost page-help">Explain page</button><button class="btn ghost export-btn" data-export="projects">Export projects</button><button class="btn primary create-btn" data-resource="projects">+ Project</button></div></div>
         <div class="tabs"><button class="tab active" data-tab="projects">Projects</button><button class="tab" data-tab="milestones">Milestones</button><button class="tab" data-tab="work-items">Work items</button><button class="tab" data-tab="comments">Comments</button></div>
         <div class="panel"><div id="deliveryTable"></div></div>
       </section>
 
       <section id="operationsSection" class="section" hidden>
-        <div class="section-toolbar"><div><p class="eyebrow">DETECTED → VERIFIED → CLOSED</p><h2>Incidents & work orders</h2></div><div><button class="btn ghost export-btn" data-export="incidents">Export incidents</button><button class="btn primary create-btn" data-resource="incidents">+ Incident</button></div></div>
+        <div class="section-toolbar"><div><p class="eyebrow">DETECTED → VERIFIED → CLOSED</p><h2>Incidents & work orders</h2></div><div><button class="btn ghost page-help">Explain page</button><button class="btn ghost export-btn" data-export="incidents">Export incidents</button><button class="btn primary create-btn" data-resource="incidents">+ Incident</button></div></div>
         <div class="tabs"><button class="tab active" data-tab="incidents">Incidents</button><button class="tab" data-tab="work-orders">Work orders</button><button class="tab" data-tab="zones">Zones</button></div>
         <div class="panel"><div id="operationsTable"></div></div>
       </section>
 
       <section id="assetsSection" class="section" hidden>
-        <div class="section-toolbar"><div><p class="eyebrow">INFRASTRUCTURE INTELLIGENCE</p><h2>Assets, meters & anomaly review</h2></div><button class="btn primary create-btn" data-resource="assets">+ Asset</button></div>
+        <div class="section-toolbar"><div><p class="eyebrow">INFRASTRUCTURE INTELLIGENCE</p><h2>Assets, meters & anomaly review</h2></div><div><button class="btn ghost page-help">Explain page</button><button class="btn primary create-btn" data-resource="assets">+ Asset</button></div></div>
         <div class="tabs"><button class="tab active" data-tab="assets">Assets</button><button class="tab" data-tab="meters">Meters</button><button class="tab" data-tab="nrw">NRW</button><button class="tab" data-tab="contractors">Contractors</button></div>
         <div class="panel"><div id="assetsTable"></div></div>
       </section>
 
       <section id="revenueSection" class="section" hidden>
-        <div class="section-toolbar"><div><p class="eyebrow">FINANCIAL OUTCOME</p><h2>Revenue recovery & expenditure control</h2></div><button class="btn ghost export-btn" data-export="revenue">Export revenue</button></div>
+        <div class="section-toolbar"><div><p class="eyebrow">FINANCIAL OUTCOME</p><h2>Revenue recovery & expenditure control</h2></div><div><button class="btn ghost page-help">Explain page</button><button class="btn ghost export-btn" data-export="revenue">Export revenue</button></div></div>
         <div id="revenueCards" class="revenue-grid"></div>
         <div class="tabs"><button class="tab active" data-tab="revenue">Recovery</button><button class="tab" data-tab="budgets">Budgets</button><button class="tab" data-tab="expenditures">Expenditure</button></div>
         <div class="panel"><div id="financeTable"></div></div>
       </section>
 
       <section id="governanceSection" class="section" hidden>
-        <div class="section-toolbar"><div><p class="eyebrow">HUMAN OVERSIGHT</p><h2>Risks, approvals & interventions</h2></div><button class="btn primary create-btn" data-resource="risks">+ Risk</button></div>
+        <div class="section-toolbar"><div><p class="eyebrow">HUMAN OVERSIGHT</p><h2>Risks, approvals & interventions</h2></div><div><button class="btn ghost page-help">Explain page</button><button class="btn primary create-btn" data-resource="risks">+ Risk</button></div></div>
         <div class="tabs"><button class="tab active" data-tab="risks">Risks</button><button class="tab" data-tab="approvals">Approvals</button><button class="tab" data-tab="interventions">Interventions</button><button class="tab" data-tab="notifications">Notifications</button></div>
         <div class="panel"><div id="governanceTable"></div></div>
       </section>
 
       <section id="documentsSection" class="section" hidden>
-        <div class="section-toolbar"><div><p class="eyebrow">EVIDENCE-BASED DELIVERY</p><h2>Documents & completion evidence</h2></div><button id="uploadDocumentButton" class="btn primary">Upload evidence</button></div>
+        <div class="section-toolbar"><div><p class="eyebrow">EVIDENCE-BASED DELIVERY</p><h2>Documents & completion evidence</h2></div><div><button class="btn ghost page-help">Explain page</button><button id="uploadDocumentButton" class="btn primary">Upload evidence</button></div></div>
         <div class="tabs"><button class="tab active" data-tab="documents">Documents</button><button class="tab" data-tab="evidence">Evidence records</button></div>
         <div class="panel"><div id="documentsTable"></div></div>
       </section>
 
       <section id="auditSection" class="section" hidden>
-        <div class="section-toolbar"><div><p class="eyebrow">TRACEABILITY</p><h2>User, AI & operational audit trail</h2></div><button id="activityRefresh" class="btn ghost">Refresh</button></div>
+        <div class="section-toolbar"><div><p class="eyebrow">TRACEABILITY</p><h2>User, AI & operational audit trail</h2></div><div><button class="btn ghost page-help">Explain page</button><button id="activityRefresh" class="btn ghost">Refresh</button></div></div>
         <div class="panel"><div id="activityFull" class="activity-list"></div></div>
       </section>
     </main>
+
+    <button id="agentLauncher" class="agent-launcher" type="button" aria-label="Open Ayanda voice assistant"><span class="launcher-orb">A</span><span class="launcher-copy"><strong>Ayanda</strong><small id="launcherState">Ready</small></span><span class="launcher-bars" aria-hidden="true"><i></i><i></i><i></i></span></button>
+
+    <aside id="voiceAgent" class="voice-agent" aria-label="Ayanda voice assistant" aria-hidden="true">
+      <header class="agent-header">
+        <div class="agent-identity"><div id="agentOrb" class="agent-orb"><div class="orb-core">A</div><div class="waveform"><i></i><i></i><i></i><i></i><i></i></div></div><div><p class="eyebrow">AQUAFLOW AI</p><h2>Ayanda Voice Copilot</h2><div class="agent-status-row"><span id="voiceState" class="badge info">Ready</span><span id="agentPageContext" class="agent-context">Command Centre</span></div></div></div>
+        <button id="closeAgentButton" class="icon-btn" type="button" aria-label="Close voice assistant">×</button>
+      </header>
+      <div class="agent-context-card"><strong>What I can do here</strong><p id="agentPageHint">Explain the executive dashboard, summarise risks, navigate the platform and execute authorised record changes.</p><div class="agent-quick-actions"><button data-agent-prompt="Explain this page">Explain page</button><button data-agent-prompt="What needs attention today?">Status</button><button data-agent-prompt="Show overdue projects">Overdue</button><button data-agent-prompt="Open incidents">Open incidents</button></div></div>
+      <div id="assistantConversation" class="conversation" aria-live="polite"><div class="assistant-bubble"><strong>Ayanda</strong><span>I can explain the current page, brief you on status, open workspaces, create records and update authorised records. Try “set project Central Pressure Zone Leak Reduction progress to 75” or “assign incident inc-001 to Network Response Team”.</span></div></div>
+      <div id="liveTranscript" class="live-transcript" hidden><span class="pulse-dot"></span><span id="transcriptText">Listening…</span></div>
+      <form id="assistantForm" class="assistant-input"><input id="assistantQuery" aria-label="Ask Ayanda" placeholder="Ask, navigate or edit…" autocomplete="off"><button id="micButton" type="button" class="voice-btn" aria-label="Start voice input"><span>●</span></button><button type="submit" class="btn primary">Send</button></form>
+      <div class="agent-controls"><button id="stopVoiceButton" class="btn ghost compact" type="button">Stop voice</button><label>Language<select id="languageSelect"><option value="en-ZA">English</option><option value="af-ZA">Afrikaans</option><option value="zu-ZA">isiZulu</option><option value="xh-ZA">isiXhosa</option><option value="st-ZA">Sesotho</option><option value="tn-ZA">Setswana</option><option value="nso-ZA">Sepedi</option><option value="ts-ZA">itsonga</option><option value="ve-ZA">Tshivenda</option><option value="ss-ZA">siSwati</option><option value="nr-ZA">isiNdebele</option></select></label><label class="switch"><input id="speakToggle" type="checkbox" checked><span>Speak</span></label><label class="switch"><input id="autoSendVoice" type="checkbox" checked><span>Hands-free</span></label></div>
+      <footer class="agent-footer"><span>Voice availability depends on the browser/device speech provider.</span><span>All executable actions remain permission-checked and audited.</span></footer>
+    </aside>
+    <div id="agentScrim" class="agent-scrim" hidden></div>
   </div>
 
-  <dialog id="recordDialog" class="dialog"><form id="recordForm"><div class="panel-head"><div><p class="eyebrow">CREATE RECORD</p><h2 id="recordDialogTitle">Create</h2></div><button type="button" class="icon-btn close-dialog">×</button></div><div id="recordFields" class="form-grid"></div><p id="recordFormMessage" class="form-message" role="alert"></p><div class="dialog-actions"><button type="button" class="btn ghost close-dialog">Cancel</button><button type="submit" class="btn primary">Save</button></div></form></dialog>
+  <dialog id="recordDialog" class="dialog"><form id="recordForm"><div class="panel-head"><div><p class="eyebrow">RECORD</p><h2 id="recordDialogTitle">Create</h2></div><button type="button" class="icon-btn close-dialog">×</button></div><div id="recordFields" class="form-grid"></div><p id="recordFormMessage" class="form-message" role="alert"></p><div class="dialog-actions"><button type="button" class="btn ghost close-dialog">Cancel</button><button type="submit" class="btn primary">Save</button></div></form></dialog>
 
   <dialog id="searchDialog" class="dialog wide"><div class="panel-head"><div><p class="eyebrow">AUTHORISED SEARCH</p><h2>Search AquaFlow</h2></div><button type="button" class="icon-btn close-search">×</button></div><form id="searchForm" class="search-row"><input id="searchInput" placeholder="Search projects, incidents, assets, meters, documents…" minlength="2"><button class="btn primary">Search</button></form><div id="searchResults" class="search-results"></div></dialog>
 
