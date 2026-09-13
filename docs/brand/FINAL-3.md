@@ -1,0 +1,1 @@
+Use only the supplied Pyrneo wordmark as the visible logo.
