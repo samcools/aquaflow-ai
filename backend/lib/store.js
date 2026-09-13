@@ -59,7 +59,7 @@ class JsonStore {
   tenantVisible(record, tenantId) {
     if (!tenantId || tenantId === '*') return true;
     if (!record || typeof record !== 'object') return false;
-    return !record.tenantId || record.tenantId === tenantId;
+    return record.tenantId === tenantId;
   }
 
   list(name, tenantId) {
@@ -80,7 +80,7 @@ class JsonStore {
     const record = {
       ...clone(input),
       id: input.id || newId(idPrefix || name.slice(0, 3)),
-      tenantId: input.tenantId || user?.tenantId || 'demo-metro',
+      tenantId: user?.tenantId || 'demo-metro',
       createdAt: input.createdAt || now,
       updatedAt: now,
       createdBy: input.createdBy || user?.sub || user?.email || 'system'
