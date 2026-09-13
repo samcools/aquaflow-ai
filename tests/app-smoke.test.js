@@ -51,6 +51,7 @@ test('root page keeps first AquaFlow design and injects neural voice/product pol
   const body = await response.text();
   assert.match(body, /styles\.css/);
   assert.match(body, /product-polish\.css/);
+  assert.match(body, /pyrneo-brand\.css/);
   assert.match(body, /openai-voice\.js/);
   assert.match(body, /original-dashboard\.js/);
   assert.match(body, /first-aquaflow-design\.js/);
@@ -59,29 +60,41 @@ test('root page keeps first AquaFlow design and injects neural voice/product pol
   assert.match(body, /AquaFlow AI/);
 });
 
-test('transparent Pyrneo mark, unified Ayanda controller and neural voice bridge are served', async () => {
-  const [pyrneoResponse, voiceResponse, neuralResponse, designResponse, polishResponse] = await Promise.all([
-    fetch(`${baseUrl}/pyrneo-logo-white.svg`),
-    fetch(`${baseUrl}/original-dashboard.js`),
-    fetch(`${baseUrl}/openai-voice.js`),
-    fetch(`${baseUrl}/first-aquaflow-design.js`),
-    fetch(`${baseUrl}/product-polish.css`)
+test('supplied Pyrneo wordmark and transparent brand treatment are served', async () => {
+  const [pyrneoResponse, brandResponse, designResponse] = await Promise.all([
+    fetch(`${baseUrl}/pyrneo-logo.webp`),
+    fetch(`${baseUrl}/pyrneo-brand.css`),
+    fetch(`${baseUrl}/first-aquaflow-design.js`)
   ]);
   assert.equal(pyrneoResponse.status, 200);
+  assert.equal(brandResponse.status, 200);
+  assert.equal(designResponse.status, 200);
+  const brandBody = await brandResponse.text();
+  assert.match(brandBody, /\.login-logo/);
+  assert.match(brandBody, /\.sidebar-logo/);
+  assert.match(brandBody, /background:transparent/);
+  const designBody = await designResponse.text();
+  assert.match(designBody, /pyrneo-logo\.webp/);
+  assert.match(designBody, /makeBlackBackgroundTransparent/);
+  assert.match(designBody, /Go to AquaFlow home/);
+  assert.doesNotMatch(designBody, /aquaflow-logo\.svg/);
+});
+
+test('unified Ayanda controller and neural voice bridge are served', async () => {
+  const [voiceResponse, neuralResponse, polishResponse] = await Promise.all([
+    fetch(`${baseUrl}/original-dashboard.js`),
+    fetch(`${baseUrl}/openai-voice.js`),
+    fetch(`${baseUrl}/product-polish.css`)
+  ]);
   assert.equal(voiceResponse.status, 200);
   assert.equal(neuralResponse.status, 200);
-  assert.equal(designResponse.status, 200);
   assert.equal(polishResponse.status, 200);
-  assert.match(await pyrneoResponse.text(), /Pyrneo/);
   const voiceBody = await voiceResponse.text();
   assert.match(voiceBody, /Hey, Ayanda/);
   assert.match(voiceBody, /ayanda-bot-icon/);
   const neuralBody = await neuralResponse.text();
   assert.match(neuralBody, /AI & Voice Settings/);
   assert.match(neuralBody, /assistant\/speech/);
-  const designBody = await designResponse.text();
-  assert.match(designBody, /pyrneo-logo-white\.svg/);
-  assert.doesNotMatch(designBody, /aquaflow-logo\.svg/);
   const polishBody = await polishResponse.text();
   assert.match(polishBody, /recovery-pulse-panel/);
   assert.match(polishBody, /chip\.critical/);
