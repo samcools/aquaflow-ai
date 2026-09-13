@@ -1,0 +1,1 @@
+Source: user-supplied Pyrneo wordmark. Preserve artwork; remove only black background for transparent display.
