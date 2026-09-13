@@ -1,0 +1,1 @@
+The active Pyrneo logo is the exact user-supplied wordmark with only the black background removed to transparency. Do not redraw or substitute it.
