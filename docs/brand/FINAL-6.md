@@ -1,0 +1,1 @@
+Use exact supplied Pyrneo logo; transparent display; no alternate logo.
