@@ -41,14 +41,24 @@ class JsonStore {
 
   write(data) {
     this.ensure();
-    const temp = `${this.runtimeFile}.tmp`;
-    fs.writeFileSync(temp, JSON.stringify(data, null, 2));
-    fs.renameSync(temp, this.runtimeFile);
+    const temp = `${this.runtimeFile}.${process.pid}.${crypto.randomUUID()}.tmp`;
+    try {
+      fs.writeFileSync(temp, JSON.stringify(data, null, 2));
+      fs.renameSync(temp, this.runtimeFile);
+    } finally {
+      if (fs.existsSync(temp)) fs.rmSync(temp, { force: true });
+    }
   }
 
   reset() {
     fs.mkdirSync(path.dirname(this.runtimeFile), { recursive: true });
-    fs.copyFileSync(this.seedFile, this.runtimeFile);
+    const temp = `${this.runtimeFile}.${process.pid}.${crypto.randomUUID()}.reset.tmp`;
+    try {
+      fs.copyFileSync(this.seedFile, temp);
+      fs.renameSync(temp, this.runtimeFile);
+    } finally {
+      if (fs.existsSync(temp)) fs.rmSync(temp, { force: true });
+    }
     return this.read();
   }
 
