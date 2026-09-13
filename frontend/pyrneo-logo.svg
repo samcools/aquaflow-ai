@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 120" role="img" aria-labelledby="pyrneoTitle">
+  <title id="pyrneoTitle">Pyrneo</title>
+  <g fill="#082b63">
+    <path d="M10 18h100c30 0 48 14 48 42s-18 42-48 42H10V18Zm28 24v36h67c16 0 24-6 24-18s-8-18-24-18H38Z"/>
+    <path d="M250 18h106c31 0 49 14 49 42 0 20-9 32-27 38l31 4v0h-33l-35-38h-55v38h-36V18Zm36 24v18h64c13 0 20-3 20-9s-7-9-20-9h-64Z"/>
+    <path d="M444 18h36l77 57V18h36v84h-34l-79-58v58h-36V18Z"/>
+    <path d="M625 18h105v24h-69v9h63v20h-63v7h69v24H625V18Z"/>
+  </g>
+  <g transform="translate(174 13)">
+    <path d="M0 6h30l32 32-16 16L0 6Z" fill="#52d91a"/>
+    <path d="M94 6H64L32 38l16 16L94 6Z" fill="#314cff"/>
+    <path d="M39 43h18v64H39Z" fill="#ff1d2f"/>
+    <path d="M35 38h26l-13 18-13-18Z" fill="#101820"/>
+  </g>
+</svg>
