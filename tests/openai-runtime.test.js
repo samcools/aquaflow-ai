@@ -15,10 +15,7 @@ const { httpApp } = require('../backend/http');
 let server,baseUrl,token;
 
 async function request(path,options={}) {
-  return fetch(`${baseUrl}${path}`,{
-    ...options,
-    headers:{authorization:`Bearer ${token}`,'content-type':'application/json',...(options.headers||{})}
-  });
+  return fetch(`${baseUrl}${path}`,{...options,headers:{authorization:`Bearer ${token}`,'content-type':'application/json',...(options.headers||{})}});
 }
 
 test.before(async()=>{
@@ -33,50 +30,30 @@ test.before(async()=>{
 
 test.after(async()=>{if(server)await new Promise(resolve=>server.close(resolve));});
 
-test('OpenAI settings start unconfigured and never expose a key',async()=>{
-  const response=await request('/api/settings/openai');
-  assert.equal(response.status,200);
-  const body=await response.json();
-  assert.equal(body.configured,false);
-  assert.equal(body.source,null);
-  assert.equal(Object.hasOwn(body,'apiKey'),false);
-  assert.equal(body.keyStorage,'ephemeral-server-session');
+test('OpenAI settings start unconfigured with curated neural voices only',async()=>{
+  const response=await request('/api/settings/openai');assert.equal(response.status,200);const body=await response.json();
+  assert.equal(body.configured,false);assert.equal(body.source,null);assert.equal(Object.hasOwn(body,'apiKey'),false);assert.equal(body.keyStorage,'ephemeral-server-session');assert.equal(body.browserTts,false);
+  assert.deepEqual(body.voices,['marin','coral','shimmer','nova','sage']);
 });
 
 test('neural speech refuses to run without a configured key',async()=>{
-  const response=await request('/api/assistant/speech',{method:'POST',body:JSON.stringify({text:'Hello from Ayanda',language:'en-ZA',voice:'coral'})});
-  assert.equal(response.status,409);
-  const body=await response.json();
-  assert.match(body.error,/not configured/i);
+  const response=await request('/api/assistant/speech',{method:'POST',body:JSON.stringify({text:'Hello from Ayanda',language:'en-ZA',voice:'marin'})});assert.equal(response.status,409);const body=await response.json();assert.match(body.error,/not configured/i);
 });
 
 test('session API key can be configured without being echoed',async()=>{
   const fake='sk-test-aquaflow-12345678901234567890';
-  const save=await request('/api/settings/openai',{method:'POST',body:JSON.stringify({apiKey:fake,voice:'coral',aiModel:'gpt-5.6-luna',ttsModel:'gpt-4o-mini-tts'})});
-  assert.equal(save.status,200);
-  const saved=await save.json();
-  assert.equal(saved.configured,true);
-  assert.equal(saved.source,'session');
-  assert.equal(Object.hasOwn(saved,'apiKey'),false);
+  const save=await request('/api/settings/openai',{method:'POST',body:JSON.stringify({apiKey:fake,voice:'marin',aiModel:'gpt-5.6-luna',ttsModel:'gpt-4o-mini-tts'})});assert.equal(save.status,200);const saved=await save.json();assert.equal(saved.configured,true);assert.equal(saved.source,'session');assert.equal(saved.voice,'marin');assert.equal(Object.hasOwn(saved,'apiKey'),false);assert.equal(saved.browserTts,false);
+  const status=await request('/api/settings/openai');const current=await status.json();assert.equal(current.configured,true);assert.equal(Object.hasOwn(current,'apiKey'),false);
+});
 
-  const status=await request('/api/settings/openai');
-  const current=await status.json();
-  assert.equal(current.configured,true);
-  assert.equal(Object.hasOwn(current,'apiKey'),false);
+test('unsupported voice is normalized to the curated default',async()=>{
+  const response=await request('/api/settings/openai',{method:'POST',body:JSON.stringify({voice:'onyx'})});assert.equal(response.status,200);const body=await response.json();assert.equal(body.voice,'marin');
 });
 
 test('session key can be cleared',async()=>{
-  const response=await request('/api/settings/openai',{method:'POST',body:JSON.stringify({clear:true})});
-  assert.equal(response.status,200);
-  const body=await response.json();
-  assert.equal(body.configured,false);
-  assert.equal(body.cleared,true);
+  const response=await request('/api/settings/openai',{method:'POST',body:JSON.stringify({clear:true})});assert.equal(response.status,200);const body=await response.json();assert.equal(body.configured,false);assert.equal(body.cleared,true);
 });
 
 test('assistant question route remains grounded without OpenAI',async()=>{
-  const response=await request('/api/assistant/query',{method:'POST',body:JSON.stringify({query:'What is causing the greatest water loss?'})});
-  assert.equal(response.status,200);
-  const body=await response.json();
-  assert.equal(body.provider,'deterministic');
-  assert.match(body.answer,/kL\/day|Data unavailable/i);
+  const response=await request('/api/assistant/query',{method:'POST',body:JSON.stringify({query:'What is causing the greatest water loss?'})});assert.equal(response.status,200);const body=await response.json();assert.equal(body.provider,'deterministic');assert.match(body.answer,/kL\/day|Data unavailable/i);
 });
