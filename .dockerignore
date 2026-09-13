@@ -1,0 +1,15 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+node_modules
+data/runtime.json
+storage/private
+logs
+coverage
+*.log
+*.db
+*.sqlite
+secrets
+credentials
