@@ -1,295 +1,110 @@
 'use strict';
 
 const state = {
-  token: sessionStorage.getItem('aquaflowToken') || '',
-  dashboard: null,
-  section: 'command',
-  recognition: null,
-  speaking: false
+  token: sessionStorage.getItem('aquaflowToken') || '', user: null, dashboard: null,
+  section: 'command', tabs: { delivery:'projects', operations:'incidents', assets:'assets', revenue:'revenue', governance:'risks', documents:'documents' },
+  cache: {}, recognition: null, speaking: false, creating: null
 };
+const $ = s => document.querySelector(s); const $$ = s => [...document.querySelectorAll(s)];
+const safe = v => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const money = v => new Intl.NumberFormat('en-ZA',{style:'currency',currency:'ZAR',maximumFractionDigits:0}).format(Number(v||0));
+const number = v => new Intl.NumberFormat('en-ZA',{maximumFractionDigits:1}).format(Number(v||0));
+const date = v => { if(!v) return '—'; const d=new Date(v); return Number.isNaN(d.getTime())?safe(v):d.toLocaleDateString('en-ZA'); };
 
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => [...document.querySelectorAll(selector)];
-const money = (value) => new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 }).format(Number(value || 0));
-const number = (value) => new Intl.NumberFormat('en-ZA').format(Number(value || 0));
-const safe = (value) => String(value ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch]));
-
-async function api(path, options = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-  if (state.token) headers.Authorization = `Bearer ${state.token}`;
-  const response = await fetch(path, { ...options, headers });
-  const body = await response.json().catch(() => ({}));
-  if (response.status === 401) {
-    signOut();
-    throw new Error(body.error || 'Your session has expired.');
-  }
-  if (!response.ok) throw new Error(body.error || 'Request failed.');
-  return body;
+async function api(path, options={}) {
+  const headers = { ...(options.headers||{}) }; const isForm = options.body instanceof FormData;
+  if (!isForm && options.body !== undefined) headers['Content-Type']='application/json';
+  if (state.token) headers.Authorization=`Bearer ${state.token}`;
+  const response=await fetch(path,{...options,headers});
+  const type=response.headers.get('content-type')||''; const body=type.includes('application/json')?await response.json().catch(()=>({})):await response.text();
+  if(response.status===401){ signOut(); throw new Error(body?.error||'Your session expired.'); }
+  if(!response.ok) throw new Error(body?.error||`Request failed (${response.status}).`); return body;
 }
+function toast(message,tone='good'){ const el=$('#toast'); el.textContent=message; el.className=`toast ${tone}`; el.hidden=false; clearTimeout(el._timer); el._timer=setTimeout(()=>el.hidden=true,3500); }
+function stopSpeech(){ if('speechSynthesis'in window) speechSynthesis.cancel(); state.speaking=false; const v=$('#voiceState'); if(v)v.textContent='Ready'; }
+async function signOut(){ stopSpeech(); if(state.token){ try{await api('/api/auth/logout',{method:'POST'});}catch{} } state.token=''; state.user=null; state.dashboard=null; state.cache={}; sessionStorage.removeItem('aquaflowToken'); $('#appView').hidden=true; $('#loginView').hidden=false; }
 
-function signOut() {
-  stopSpeech();
-  state.token = '';
-  state.dashboard = null;
-  sessionStorage.removeItem('aquaflowToken');
-  $('#appView').hidden = true;
-  $('#loginView').hidden = false;
-}
+async function login(e){ e.preventDefault(); $('#loginMessage').textContent=''; try { const result=await api('/api/auth/login',{method:'POST',body:JSON.stringify({email:$('#email').value,password:$('#password').value,role:$('#roleSelect').value})}); state.token=result.token; state.user=result.user; sessionStorage.setItem('aquaflowToken',result.token); $('#loginView').hidden=true; $('#appView').hidden=false; await loadAll(); } catch(err){ $('#loginMessage').textContent=err.message; } }
+async function restoreSession(){ if(!state.token)return; try{ const me=await api('/api/auth/me'); state.user=me.user; $('#loginView').hidden=true; $('#appView').hidden=false; await loadAll(); }catch{ signOut(); } }
 
-async function login(event) {
-  event.preventDefault();
-  const message = $('#loginMessage');
-  message.textContent = '';
-  try {
-    const result = await api('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email: $('#email').value, password: $('#password').value })
-    });
-    state.token = result.token;
-    sessionStorage.setItem('aquaflowToken', result.token);
-    $('#loginView').hidden = true;
-    $('#appView').hidden = false;
-    await loadDashboard();
-  } catch (error) {
-    message.textContent = error.message;
-  }
-}
+function chip(v){const text=String(v||'unknown');const cls=text.toLowerCase().replace(/[^a-z0-9-]/g,'-');return `<span class="chip ${safe(cls)}">${safe(text)}</span>`;}
+function metric(label,value,note,tone=''){return `<article class="metric-card ${tone}"><span class="metric-label">${safe(label)}</span><strong class="metric-value">${safe(value)}</strong><span class="metric-note">${safe(note)}</span></article>`;}
+function progress(v){const n=Math.max(0,Math.min(100,Number(v||0)));return `<div class="progress"><span style="width:${n}%"></span></div><small>${n}%</small>`;}
+function table(headers,rows){return `<div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th>${safe(h)}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${headers.length}" class="empty">No records available.</td></tr>`}</tbody></table></div>`;}
 
-async function restoreSession() {
-  if (!state.token) return;
-  try {
-    await api('/api/auth/me');
-    $('#loginView').hidden = true;
-    $('#appView').hidden = false;
-    await loadDashboard();
-  } catch {
-    signOut();
-  }
-}
+async function loadAll(){ const [me,dashboard]=await Promise.all([api('/api/auth/me'),api('/api/dashboard')]); state.user=me.user; state.dashboard=dashboard; state.cache={}; $('#userRole').textContent=state.user.role; $('#tenantName').textContent=state.user.tenantId==='demo-metro'?'Demo Metro Municipality':state.user.tenantId; $('#dataBadge').textContent=dashboard.synthetic?'Synthetic data':'Authorised live data'; $('#notificationBadge').textContent=`${dashboard.notifications?.length||0} alerts`; renderCommand(); await renderCurrentSection(); }
+function renderCommand(){const d=state.dashboard,s=d.summary||{};$('#metricGrid').innerHTML=[metric('Active projects',s.activeProjects,`${s.atRiskProjects||0} at risk`,s.atRiskProjects?'attention':'good'),metric('Critical incidents',s.criticalIncidents,`${s.openWorkOrders||0} open work orders`,s.criticalIncidents?'danger':'good'),metric('Estimated open loss',`${number(s.estimatedOpenLossKlPerDay)} kL/day`,'Operational estimate','attention'),metric('Verified recovery',money(s.verifiedRecovery),`Forecast ${money(s.projectedRecovery)}`,'good'),metric('Pending approvals',(d.approvals||[]).filter(a=>a.status==='pending').length,'Human decisions required','attention'),metric('Meter anomalies',(d.meters||[]).filter(m=>Number(m.anomaly?.score||0)>=40).length,'Review before action',''),metric('Open risks',(d.risks||[]).filter(r=>r.status!=='closed').length,'Programme risk register',''),metric('Unread alerts',(d.notifications||[]).length,'Operational notifications','')].join('');
+$('#priorityIncidents').innerHTML=(d.incidents||[]).slice(0,5).map(i=>`<div class="incident-row"><div><strong>${safe(i.id)} · ${safe(i.zone)}</strong><small>${safe(i.asset)}</small></div><div><small>Why prioritised</small>${safe((i.priority?.reasons||[]).join(', ')||'No elevated factors')}</div><div>${chip(i.priority?.band||i.severity)}</div><div><strong>${safe(i.priority?.score||0)}/100</strong><small>${number(i.estimatedLossKlPerDay)} kL/day</small></div></div>`).join('')||'<p class="empty">No open incidents.</p>';
+$('#projectPreview').innerHTML=(d.projects||[]).slice(0,5).map(p=>`<div class="compact-row"><div><strong>${safe(p.name)}</strong><small>${safe(p.owner)} · ${safe(p.nextMilestone||'No milestone')}</small></div>${chip(p.health?.band||p.risk)}<div>${progress(p.progress)}</div></div>`).join('');
+$('#nrwPreview').innerHTML=(d.nrw||[]).slice(0,3).map(n=>`<div class="kpi-line"><span>${safe(n.zone||n.name||'Municipal balance')}</span><strong>${number(n.calculated?.nrwPercent ?? n.currentNRWPercent)}%</strong><small>Target ${number(n.targetNRWPercent)}%</small></div>`).join('')||'<p class="empty">Data unavailable</p>'; renderActivities(d.activities||[],'#activityPreview',6); renderRevenueCards();}
+function renderRevenueCards(){const d=state.dashboard||{},s=d.summary||{},rows=d.revenue||[];const ai=rows.reduce((a,r)=>a+Number(r.aiEstimatedRecovery||0),0);$('#revenueCards').innerHTML=`<article class="revenue-card"><small>Forecast</small><strong>${money(s.projectedRecovery)}</strong><span>Programme projection</span></article><article class="revenue-card"><small>AI estimate</small><strong>${money(ai)}</strong><span>Advisory; not booked</span></article><article class="revenue-card"><small>Verified realised</small><strong>${money(s.verifiedRecovery)}</strong><span>Evidence-backed recovery</span></article>`;}
+function renderActivities(rows,target,limit=50){$(target).innerHTML=rows.slice(0,limit).map(a=>`<div class="activity-item"><small>${safe(new Date(a.timestamp).toLocaleString('en-ZA',{dateStyle:'short',timeStyle:'short'}))}</small><div><strong>${safe(a.action)}</strong><small>${safe(a.user)}</small></div>${chip(a.recordType)}</div>`).join('')||'<p class="empty">No activity.</p>';}
 
-function metric(label, value, note, tone = '') {
-  return `<article class="metric-card ${tone}"><span class="metric-label">${safe(label)}</span><strong class="metric-value">${safe(value)}</strong><span class="metric-note">${safe(note)}</span></article>`;
-}
+async function getResource(resource,force=false){if(!force&&state.cache[resource])return state.cache[resource];const endpoint=resource==='nrw'?'/api/nrw':resource==='zones'?'/api/zones':`/api/${resource}`;const rows=await api(endpoint);state.cache[resource]=rows;return rows;}
+const renderers={
+  projects:r=>table(['Project','Owner','Status','Progress','Risk','Budget','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong><small>${safe(x.id)}</small></td><td>${safe(x.owner)}</td><td>${chip(x.status)}</td><td>${progress(x.progress)}</td><td>${chip(x.risk)}</td><td>${money(x.budget)}</td><td>${actions('projects',x)}</td></tr>`)),
+  milestones:r=>table(['Milestone','Project','Status','Progress','Due','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong><small>${safe(x.id)}</small></td><td>${safe(x.projectId)}</td><td>${chip(x.status)}</td><td>${progress(x.progress)}</td><td>${date(x.dueDate)}</td><td>${actions('milestones',x)}</td></tr>`)),
+  'work-items':r=>table(['Work item','Project','Owner','Priority','Status','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong><small>${safe(x.id)}</small></td><td>${safe(x.projectId)}</td><td>${safe(x.owner||'—')}</td><td>${chip(x.priority)}</td><td>${chip(x.status)}</td><td>${actions('work-items',x)}</td></tr>`)),
+  comments:r=>table(['Record','Comment','Author','Created'],r.map(x=>`<tr><td>${chip(x.recordType)}<small>${safe(x.recordId)}</small></td><td>${safe(x.body)}</td><td>${safe(x.author||x.createdBy||'—')}</td><td>${date(x.createdAt)}</td></tr>`)),
+  incidents:r=>table(['Incident','Zone / Asset','Severity','Status','Loss','Team','Actions'],r.map(x=>`<tr><td><strong>${safe(x.id)}</strong><small>${safe(x.category)}</small></td><td>${safe(x.zone)}<small>${safe(x.asset)}</small></td><td>${chip(x.severity)}</td><td>${chip(x.status)}</td><td>${number(x.estimatedLossKlPerDay)} kL/day</td><td>${safe(x.assignedTeam||'Unassigned')}</td><td>${actions('incidents',x)}</td></tr>`)),
+  'work-orders':r=>table(['Work order','Description','Priority','Status','Team','SLA','Actions'],r.map(x=>`<tr><td><strong>${safe(x.id)}</strong><small>${safe(x.incidentId||'')}</small></td><td>${safe(x.description)}</td><td>${chip(x.priority)}</td><td>${chip(x.status)}</td><td>${safe(x.assignedTeam||'Unassigned')}</td><td>${safe(x.slaHours||'—')}h</td><td>${actions('work-orders',x)}</td></tr>`)),
+  zones:r=>table(['Zone','Municipality','Pressure','NRW','Risk'],r.map(x=>`<tr><td><strong>${safe(x.name||x.zone)}</strong></td><td>${safe(x.municipality||'—')}</td><td>${safe(x.pressureBar||'—')}</td><td>${number(x.nrwPercent||0)}%</td><td>${chip(x.risk||'medium')}</td></tr>`)),
+  assets:r=>table(['Asset','Type','Zone','Condition','Criticality','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong><small>${safe(x.id)}</small></td><td>${safe(x.type)}</td><td>${safe(x.zone||'—')}</td><td>${chip(x.condition||'unknown')}</td><td>${chip(x.criticality||'medium')}</td><td>${actions('assets',x)}</td></tr>`)),
+  meters:r=>table(['Meter','Account','Zone','Reading','Anomaly','Reason','Actions'],r.map(x=>`<tr><td><strong>${safe(x.id)}</strong></td><td>${safe(x.accountReference)}</td><td>${safe(x.zone||'—')}</td><td>${number(x.currentReading||x.consumptionKl||0)}</td><td><strong>${safe(x.anomaly?.score||'—')}</strong></td><td>${safe((x.anomaly?.reasons||[]).join(', ')||'No material anomaly')}</td><td>${actions('meters',x)}</td></tr>`)),
+  nrw:r=>table(['Zone / period','Input volume','Authorised','NRW','Target'],r.map(x=>`<tr><td><strong>${safe(x.zone||x.period||x.id)}</strong></td><td>${number(x.systemInputVolumeKl||0)} kL</td><td>${number(x.billedAuthorisedConsumptionKl||0)} kL</td><td><strong>${number(x.calculated?.nrwPercent ?? x.currentNRWPercent)}%</strong></td><td>${number(x.targetNRWPercent||0)}%</td></tr>`)),
+  contractors:r=>table(['Contractor','Status','SLA','Performance','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong><small>${safe(x.id)}</small></td><td>${chip(x.status||'active')}</td><td>${safe(x.slaPerformance||x.slaPercent||'—')}</td><td>${safe(x.performance||'—')}</td><td>${actions('contractors',x)}</td></tr>`)),
+  revenue:r=>table(['Recovery item','Forecast','AI estimate','Verified realised','Actions'],r.map(x=>`<tr><td><strong>${safe(x.description)}</strong></td><td>${money(x.projectedRecovery)}</td><td>${money(x.aiEstimatedRecovery)}</td><td>${money(x.verifiedRealisedRecovery)}</td><td>${actions('revenue',x)}</td></tr>`)),
+  budgets:r=>table(['Budget','Approved','Committed','Actual','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong></td><td>${money(x.approvedAmount||x.amount)}</td><td>${money(x.committedAmount)}</td><td>${money(x.actualAmount)}</td><td>${actions('budgets',x)}</td></tr>`)),
+  expenditures:r=>table(['Description','Project','Amount','Status','Actions'],r.map(x=>`<tr><td><strong>${safe(x.description)}</strong></td><td>${safe(x.projectId||'—')}</td><td>${money(x.amount)}</td><td>${chip(x.status||'recorded')}</td><td>${actions('expenditures',x)}</td></tr>`)),
+  risks:r=>table(['Risk','Level','Owner','Status','Mitigation','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong></td><td>${chip(x.level)}</td><td>${safe(x.owner||'—')}</td><td>${chip(x.status||'open')}</td><td>${safe(x.mitigation||'—')}</td><td>${actions('risks',x)}</td></tr>`)),
+  approvals:r=>table(['Approval','Record','Status','Requested by','Decision'],r.map(x=>`<tr><td><strong>${safe(x.subject)}</strong></td><td>${chip(x.recordType)}<small>${safe(x.recordId)}</small></td><td>${chip(x.status)}</td><td>${safe(x.requestedBy||x.createdBy||'—')}</td><td>${x.status==='pending'?`<button class="mini approve" data-approval="${safe(x.id)}" data-decision="approved">Approve</button> <button class="mini reject" data-approval="${safe(x.id)}" data-decision="rejected">Reject</button>`:safe(x.decidedBy||'—')}</td></tr>`)),
+  interventions:r=>table(['Intervention','Owner','Status','Expected benefit','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong></td><td>${safe(x.owner||'—')}</td><td>${chip(x.status||'planned')}</td><td>${safe(x.expectedBenefit||'—')}</td><td>${actions('interventions',x)}</td></tr>`)),
+  notifications:r=>table(['Notification','Severity','Status','Created'],r.map(x=>`<tr><td><strong>${safe(x.message)}</strong></td><td>${chip(x.severity||'info')}</td><td>${x.read?'Read':`<button class="mini" data-read-notification="${safe(x.id)}">Mark read</button>`}</td><td>${date(x.createdAt)}</td></tr>`)),
+  documents:r=>table(['Document','Linked record','Type','Size','Download'],r.map(x=>`<tr><td><strong>${safe(x.name)}</strong><small>${safe(x.originalName||'')}</small></td><td>${chip(x.recordType||'general')}<small>${safe(x.recordId||'')}</small></td><td>${safe(x.mimeType||'metadata')}</td><td>${x.size?`${number(x.size/1024)} KB`:'—'}</td><td>${x.storedName?`<a class="link-button" href="/api/documents/${encodeURIComponent(x.id)}/download" data-download="${safe(x.id)}">Download</a>`:'Metadata only'}</td></tr>`)),
+  evidence:r=>table(['Evidence','Record','Type','Verified','Actions'],r.map(x=>`<tr><td><strong>${safe(x.name||x.id)}</strong></td><td>${chip(x.recordType)}<small>${safe(x.recordId)}</small></td><td>${safe(x.type||'evidence')}</td><td>${chip(x.verified?'verified':'pending')}</td><td>${actions('evidence',x)}</td></tr>`))
+};
+function actions(resource,row){return `<button class="mini edit-record" data-resource="${safe(resource)}" data-id="${safe(row.id)}">Edit</button> <button class="mini archive-record" data-resource="${safe(resource)}" data-id="${safe(row.id)}">Archive</button>`;}
 
-function chip(value) {
-  const cls = safe(String(value || '').toLowerCase().replace(/[^a-z-]/g, ''));
-  return `<span class="chip ${cls}">${safe(value || 'unknown')}</span>`;
-}
+async function renderCurrentSection(){ if(state.section==='command'||state.section==='audit'){if(state.section==='audit')renderActivities(state.dashboard?.activities||[],'#activityFull',100);return;} const resource=state.tabs[state.section]; if(!resource)return; const rows=await getResource(resource); const target={delivery:'#deliveryTable',operations:'#operationsTable',assets:'#assetsTable',revenue:'#financeTable',governance:'#governanceTable',documents:'#documentsTable'}[state.section]; $(target).innerHTML=(renderers[resource]||(()=>'<p class="empty">No renderer available.</p>'))(rows); bindDynamic(); }
+function showSection(name){state.section=name; $$('.section').forEach(s=>{s.hidden=true;s.classList.remove('active-section')}); const section=$(`#${name}Section`); if(section){section.hidden=false;section.classList.add('active-section')} $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.section===name)); const titles={command:'Executive Command Centre',delivery:'Programme & Project Delivery',operations:'Incident & Work Order Response',assets:'Assets & Meter Intelligence',revenue:'Revenue Recovery & Finance',governance:'Governance & Human Oversight',documents:'Evidence & Documents',audit:'Audit & Activity'}; $('#pageTitle').textContent=titles[name]||'AquaFlow AI'; renderCurrentSection(); window.scrollTo({top:0,behavior:'smooth'});}
 
-function renderDashboard() {
-  const data = state.dashboard;
-  if (!data) return;
-  const s = data.summary;
-  $('#metricGrid').innerHTML = [
-    metric('Active projects', s.activeProjects, `${s.atRiskProjects} currently at risk`, s.atRiskProjects ? 'attention' : 'good'),
-    metric('High / critical incidents', s.criticalIncidents, `${s.openWorkOrders} open work orders`, s.criticalIncidents ? 'danger' : 'good'),
-    metric('Estimated open water loss', `${number(s.estimatedOpenLossKlPerDay)} kL/day`, 'Synthetic incident estimates', 'attention'),
-    metric('Verified revenue recovery', money(s.verifiedRecovery), `Projected: ${money(s.projectedRecovery)}`, 'good')
-  ].join('');
+const fieldSchemas={
+ projects:[['name','Project name','text',true],['owner','Owner','text',true],['status','Status','select','active|at-risk|delayed|completed'],['risk','Risk','select','low|medium|high|critical'],['progress','Progress %','number'],['budget','Budget ZAR','number'],['nextMilestone','Next milestone','text']],
+ milestones:[['projectId','Project ID','text',true],['name','Milestone','text',true],['status','Status','select','not-started|in-progress|complete|blocked'],['progress','Progress %','number'],['dueDate','Due date','date']],
+ 'work-items':[['projectId','Project ID','text',true],['name','Work item','text',true],['owner','Owner','text'],['priority','Priority','select','low|medium|high|critical'],['status','Status','select','todo|in-progress|blocked|done']],
+ incidents:[['zone','Zone','text',true],['asset','Asset','text',true],['category','Category','select','leak|burst|meter-anomaly|pressure|quality'],['severity','Severity','select','low|medium|high|critical'],['status','Status','select','detected|verified|assigned|dispatched|repair-in-progress|repaired|closed'],['estimatedLossKlPerDay','Est. loss kL/day','number'],['populationAffected','Population affected','number'],['assignedTeam','Assigned team','text']],
+ 'work-orders':[['description','Description','text',true],['incidentId','Incident ID','text'],['projectId','Project ID','text'],['priority','Priority','select','low|medium|high|critical'],['assignedTeam','Assigned team','text'],['status','Status','select','assigned|dispatched|repair-in-progress|repaired|verified|closed'],['slaHours','SLA hours','number'],['estimatedCost','Estimated cost','number']],
+ assets:[['name','Asset name','text',true],['type','Type','text',true],['zone','Zone','text'],['condition','Condition','select','good|fair|poor|critical'],['criticality','Criticality','select','low|medium|high|critical']],
+ meters:[['accountReference','Account reference','text',true],['zone','Zone','text'],['status','Status','select','active|inactive|investigate'],['currentReading','Current reading','number'],['averageConsumptionKl','Average consumption kL','number'],['currentConsumptionKl','Current consumption kL','number']],
+ contractors:[['name','Contractor name','text',true],['status','Status','select','active|suspended|complete'],['performance','Performance note','text']],
+ risks:[['name','Risk','text',true],['level','Level','select','low|medium|high|critical'],['owner','Owner','text'],['status','Status','select','open|mitigating|closed'],['mitigation','Mitigation','text']],
+ interventions:[['name','Intervention','text',true],['owner','Owner','text'],['status','Status','select','planned|approved|in-progress|complete'],['expectedBenefit','Expected benefit','text']],
+ revenue:[['description','Description','text',true],['projectedRecovery','Forecast','number'],['aiEstimatedRecovery','AI estimate','number'],['verifiedRealisedRecovery','Verified realised','number']],
+ budgets:[['name','Budget','text',true],['approvedAmount','Approved amount','number'],['committedAmount','Committed amount','number'],['actualAmount','Actual amount','number']],
+ expenditures:[['description','Description','text',true],['projectId','Project ID','text'],['amount','Amount','number'],['status','Status','select','recorded|approved|paid']],
+ evidence:[['recordType','Record type','text',true],['recordId','Record ID','text',true],['name','Evidence description','text'],['type','Type','text'],['verified','Verified','select','false|true']]
+};
+function fieldHtml([name,label,type,config],value=''){if(type==='select'){return `<label>${safe(label)}<select name="${safe(name)}">${String(config).split('|').map(o=>`<option value="${safe(o)}" ${String(value)===o?'selected':''}>${safe(o)}</option>`).join('')}</select></label>`;} return `<label>${safe(label)}<input name="${safe(name)}" type="${safe(type)}" value="${safe(value??'')}" ${config===true?'required':''}></label>`;}
+async function openRecordDialog(resource,id=null){const schema=fieldSchemas[resource];if(!schema){toast(`Creation form for ${resource} is not configured.`,'warning');return;}let record={};if(id){try{record=await api(`/api/${resource}/${encodeURIComponent(id)}`);}catch(e){toast(e.message,'danger');return;}}state.creating={resource,id};$('#recordDialogTitle').textContent=id?`Edit ${resource}`:`Create ${resource}`;$('#recordFields').innerHTML=schema.map(f=>fieldHtml(f,record[f[0]])).join('');$('#recordFormMessage').textContent='';$('#recordDialog').showModal();}
+async function saveRecord(e){e.preventDefault();const {resource,id}=state.creating||{};if(!resource)return;const payload=Object.fromEntries(new FormData(e.currentTarget).entries());for(const [name,,type] of fieldSchemas[resource]){if(type==='number')payload[name]=Number(payload[name]||0);if(payload[name]==='true')payload[name]=true;if(payload[name]==='false')payload[name]=false;}try{await api(id?`/api/${resource}/${encodeURIComponent(id)}`:`/api/${resource}`,{method:id?'PATCH':'POST',body:JSON.stringify(payload)});$('#recordDialog').close();delete state.cache[resource];await loadAll();showSection(state.section);toast(id?'Record updated.':'Record created.');}catch(err){$('#recordFormMessage').textContent=err.message;}}
+async function archiveRecord(resource,id){if(!confirm('Archive this record? It can be restored through the API/audit workflow.'))return;try{await api(`/api/${resource}/${encodeURIComponent(id)}/archive`,{method:'POST'});delete state.cache[resource];await loadAll();showSection(state.section);toast('Record archived.');}catch(e){toast(e.message,'danger');}}
 
-  $('#priorityIncidents').innerHTML = data.incidents.slice(0, 4).map(i => `
-    <div class="incident-row">
-      <div><div class="item-title">${safe(i.id)} · ${safe(i.zone)}</div><div class="item-sub">${safe(i.asset)} · ${number(i.estimatedLossKlPerDay)} kL/day</div></div>
-      <div><div class="item-sub">Why prioritised</div><div>${safe(i.priority.reasons.join(', '))}</div></div>
-      <div>${chip(i.priority.band)}</div>
-      <div><span class="priority-score">${safe(i.priority.score)}</span><span class="item-sub"> / 100</span></div>
-    </div>`).join('') || '<p class="item-sub">No open incidents.</p>';
+function appendBubble(text,who='assistant'){const box=$('#assistantConversation'),el=document.createElement('div');el.className=who==='user'?'user-bubble':'assistant-bubble';el.textContent=text;box.appendChild(el);box.scrollTop=box.scrollHeight;}
+function selectVoice(lang){const voices=speechSynthesis?.getVoices?.()||[],root=lang.split('-')[0].toLowerCase(),list=voices.filter(v=>(v.lang||'').toLowerCase().startsWith(root));return list.find(v=>/ayanda/i.test(v.name))||list.find(v=>/south africa|africa|zulu|xhosa/i.test(`${v.name} ${v.lang}`))||list[0]||null;}
+function speak(text){if(!$('#speakToggle').checked||!('speechSynthesis'in window))return;stopSpeech();const u=new SpeechSynthesisUtterance(text),lang=$('#languageSelect').value,voice=selectVoice(lang);u.lang=lang;if(voice)u.voice=voice;u.rate=1.02;u.onstart=()=>{$('#voiceState').textContent=voice?`Speaking · ${voice.name}`:'Speaking';};u.onend=()=>$('#voiceState').textContent='Ready';u.onerror=()=>$('#voiceState').textContent='Voice unavailable';speechSynthesis.speak(u);}
+function commandLike(q){return /^(open|go to|show|take me to|create|add|archive|update|comment)\b/i.test(q);}
+async function askAssistant(e){e.preventDefault();const input=$('#assistantQuery'),query=input.value.trim();if(!query)return;appendBubble(query,'user');input.value='';$('#voiceState').textContent='Processing';try{const result=await api(commandLike(query)?'/api/assistant/command':'/api/assistant/query',{method:'POST',body:JSON.stringify(commandLike(query)?{command:query}:{query,language:$('#languageSelect').value})});const answer=result.confirmation||result.answer||'Completed.';appendBubble(answer);if(result.type==='navigate')navigateFromAssistant(result.target);speak(answer);await loadAll();}catch(err){appendBubble(`I could not complete that request: ${err.message}`);$('#voiceState').textContent='Error';}}
+function navigateFromAssistant(target){const map={dashboard:'command',projects:'delivery',incidents:'operations','work-orders':'operations',meters:'assets',assets:'assets',contractors:'assets',finance:'revenue',revenue:'revenue',risks:'governance',approvals:'governance',audit:'audit'};if(map[target])showSection(map[target]);}
+function setupSpeech(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('#micButton').disabled=true;return;}const r=new SR();r.interimResults=false;r.continuous=false;r.onstart=()=>{stopSpeech();$('#voiceState').textContent='Listening';};r.onresult=e=>{$('#assistantQuery').value=e.results[0][0].transcript;$('#voiceState').textContent='Ready';};r.onerror=()=>$('#voiceState').textContent='Voice input unavailable';r.onend=()=>{if($('#voiceState').textContent==='Listening')$('#voiceState').textContent='Ready';};state.recognition=r;}
+function startVoice(){if(!state.recognition)return;stopSpeech();state.recognition.lang=$('#languageSelect').value;try{state.recognition.start();}catch{}}
 
-  $('#projectPreview').innerHTML = data.projects.slice(0, 4).map(p => `
-    <div class="project-row">
-      <div><div class="item-title">${safe(p.name)}</div><div class="item-sub">${safe(p.owner)} · ${safe(p.nextMilestone)}</div></div>
-      <div>${chip(p.risk)}</div>
-      <div><div class="progress" aria-label="${safe(p.progress)} percent complete"><span style="width:${Math.max(0, Math.min(100, Number(p.progress || 0)))}%"></span></div></div>
-      <strong>${safe(p.progress)}%</strong>
-    </div>`).join('');
+async function doSearch(e){e.preventDefault();const q=$('#searchInput').value.trim();if(q.length<2)return;$('#searchResults').innerHTML='<p class="empty">Searching…</p>';try{const result=await api(`/api/search?q=${encodeURIComponent(q)}`);$('#searchResults').innerHTML=result.results.map(r=>`<div class="search-result"><div><strong>${safe(r.title)}</strong><small>${safe(r.type)} · ${safe(r.id)}</small></div>${chip(r.type)}</div>`).join('')||'<p class="empty">No authorised results found.</p>';}catch(err){$('#searchResults').innerHTML=`<p class="form-message">${safe(err.message)}</p>`;}}
+async function uploadDocument(e){e.preventDefault();$('#uploadMessage').textContent='';try{await api('/api/documents/upload',{method:'POST',body:new FormData(e.currentTarget)});$('#uploadDialog').close();e.currentTarget.reset();delete state.cache.documents;await loadAll();showSection('documents');toast('Evidence uploaded securely.');}catch(err){$('#uploadMessage').textContent=err.message;}}
+async function approvalDecision(id,decision){try{await api(`/api/approvals/${encodeURIComponent(id)}/decision`,{method:'POST',body:JSON.stringify({decision})});delete state.cache.approvals;await loadAll();showSection('governance');toast(`Approval ${decision}.`);}catch(e){toast(e.message,'danger');}}
+async function markRead(id){try{await api(`/api/notifications/${encodeURIComponent(id)}/read`,{method:'POST'});delete state.cache.notifications;await loadAll();showSection('governance');}catch(e){toast(e.message,'danger');}}
+function exportResource(resource){window.open(`/api/reports/${encodeURIComponent(resource)}.csv`,'_blank','noopener');}
 
-  renderActivities(data.activities || [], '#activityPreview', 5);
-  renderProjects(data.projects || []);
-  renderIncidents(data.incidents || []);
-  renderRevenue(data.revenue || [], s);
-  renderActivities(data.activities || [], '#activityFull', 50);
-}
+function bindDynamic(){ $$('.edit-record').forEach(b=>b.onclick=()=>openRecordDialog(b.dataset.resource,b.dataset.id)); $$('.archive-record').forEach(b=>b.onclick=()=>archiveRecord(b.dataset.resource,b.dataset.id)); $$('[data-approval]').forEach(b=>b.onclick=()=>approvalDecision(b.dataset.approval,b.dataset.decision)); $$('[data-read-notification]').forEach(b=>b.onclick=()=>markRead(b.dataset.readNotification)); }
+function bind(){ $('#loginForm').onsubmit=login;$('#logoutButton').onclick=signOut;$('#refreshButton').onclick=loadAll;$('#activityRefresh').onclick=loadAll;$('#assistantForm').onsubmit=askAssistant;$('#micButton').onclick=startVoice;$('#languageSelect').onchange=stopSpeech;$('#recordForm').onsubmit=saveRecord;$('#searchForm').onsubmit=doSearch;$('#uploadForm').onsubmit=uploadDocument;$('#globalSearchButton').onclick=()=>$('#searchDialog').showModal();$('#quickCreateButton').onclick=()=>openRecordDialog(state.section==='operations'?'incidents':state.section==='assets'?'assets':state.section==='governance'?'risks':'projects');$('#uploadDocumentButton').onclick=()=>$('#uploadDialog').showModal();$$('.close-dialog').forEach(b=>b.onclick=()=>$('#recordDialog').close());$$('.close-search').forEach(b=>b.onclick=()=>$('#searchDialog').close());$$('.close-upload').forEach(b=>b.onclick=()=>$('#uploadDialog').close());$$('.nav-item').forEach(b=>b.onclick=()=>showSection(b.dataset.section));$$('[data-go]').forEach(b=>b.onclick=()=>showSection(b.dataset.go));$$('.create-btn').forEach(b=>b.onclick=()=>openRecordDialog(b.dataset.resource));$$('.export-btn').forEach(b=>b.onclick=()=>exportResource(b.dataset.export));$$('.tab').forEach(b=>b.onclick=()=>{const section=b.closest('.section').id.replace('Section','');state.tabs[section]=b.dataset.tab;b.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));renderCurrentSection();});window.addEventListener('beforeunload',stopSpeech);}
 
-function renderProjects(projects) {
-  $('#projectsTable').innerHTML = projects.map(p => `
-    <tr>
-      <td><strong>${safe(p.name)}</strong><div class="item-sub">${safe(p.id)}</div></td>
-      <td>${safe(p.owner)}</td><td>${chip(p.status)}</td>
-      <td><div class="progress"><span style="width:${Math.max(0, Math.min(100, Number(p.progress || 0)))}%"></span></div><div class="item-sub">${safe(p.progress)}%</div></td>
-      <td>${chip(p.risk)}</td><td class="money">${money(p.budget)}</td><td>${safe(p.nextMilestone || '—')}</td>
-    </tr>`).join('');
-}
-
-function renderIncidents(incidents) {
-  $('#incidentsTable').innerHTML = incidents.map(i => `
-    <tr>
-      <td><strong>${safe(i.id)}</strong><div class="item-sub">${safe(i.category)}</div></td>
-      <td>${safe(i.zone)}<div class="item-sub">${safe(i.asset)}</div></td>
-      <td>${chip(i.severity)}</td><td>${chip(i.status)}</td>
-      <td>${number(i.estimatedLossKlPerDay)} kL/day</td>
-      <td><strong>${safe(i.priority.score)}/100</strong><div>${chip(i.priority.band)}</div></td>
-      <td>${safe(i.assignedTeam)}</td>
-    </tr>`).join('');
-}
-
-function renderRevenue(revenue, summary) {
-  const ai = revenue.reduce((sum, r) => sum + Number(r.aiEstimatedRecovery || 0), 0);
-  $('#revenueCards').innerHTML = `
-    <article class="revenue-card"><span class="item-sub">Forecast</span><strong>${money(summary.projectedRecovery)}</strong></article>
-    <article class="revenue-card"><span class="item-sub">AI estimate</span><strong>${money(ai)}</strong></article>
-    <article class="revenue-card"><span class="item-sub">Verified realised</span><strong>${money(summary.verifiedRecovery)}</strong></article>`;
-}
-
-function renderActivities(activities, target, limit) {
-  $(target).innerHTML = activities.slice(0, limit).map(a => {
-    const when = new Date(a.timestamp);
-    return `<div class="activity-item"><div class="item-sub">${safe(when.toLocaleString('en-ZA', { dateStyle:'short', timeStyle:'short' }))}</div><div><div class="item-title">${safe(a.action)}</div><div class="item-sub">${safe(a.user)}</div></div><div>${chip(a.recordType)}</div></div>`;
-  }).join('') || '<p class="item-sub">No recent activity.</p>';
-}
-
-async function loadDashboard() {
-  const data = await api('/api/dashboard');
-  state.dashboard = data;
-  $('#dataBadge').textContent = data.synthetic ? 'Synthetic data' : 'Authorised live data';
-  renderDashboard();
-}
-
-function showSection(name) {
-  state.section = name;
-  const titles = { command:'Executive Command Centre', projects:'Programme & Project Delivery', incidents:'Incident & Work Order Response', revenue:'Revenue Recovery', activity:'Audit & Activity' };
-  $('.active-section')?.classList.remove('active-section');
-  $$('.section').forEach(s => s.hidden = true);
-  const section = $(`#${name}Section`);
-  if (section) { section.hidden = false; section.classList.add('active-section'); }
-  $$('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.section === name));
-  $('#pageTitle').textContent = titles[name] || 'AquaFlow AI';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function appendBubble(text, who = 'assistant') {
-  const box = $('#assistantConversation');
-  const div = document.createElement('div');
-  div.className = who === 'user' ? 'user-bubble' : 'assistant-bubble';
-  div.textContent = text;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-}
-
-function stopSpeech() {
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  state.speaking = false;
-  $('#voiceState').textContent = 'Ready';
-}
-
-function selectVoice(language) {
-  const voices = window.speechSynthesis?.getVoices?.() || [];
-  const langRoot = language.split('-')[0].toLowerCase();
-  const candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(langRoot));
-  return candidates.find(v => /ayanda/i.test(v.name)) || candidates.find(v => /south africa|africa|zulu|xhosa/i.test(`${v.name} ${v.lang}`)) || candidates[0] || null;
-}
-
-function speak(text) {
-  if (!$('#speakToggle').checked || !('speechSynthesis' in window)) return;
-  stopSpeech();
-  const language = $('#languageSelect').value;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = language;
-  const voice = selectVoice(language);
-  if (voice) utterance.voice = voice;
-  utterance.rate = 1.02;
-  utterance.onstart = () => { state.speaking = true; $('#voiceState').textContent = voice ? `Speaking · ${voice.name}` : 'Speaking'; };
-  utterance.onend = () => { state.speaking = false; $('#voiceState').textContent = 'Ready'; };
-  utterance.onerror = () => { state.speaking = false; $('#voiceState').textContent = 'Voice unavailable'; };
-  window.speechSynthesis.speak(utterance);
-}
-
-async function askAssistant(event) {
-  event.preventDefault();
-  const input = $('#assistantQuery');
-  const query = input.value.trim();
-  if (!query) return;
-  appendBubble(query, 'user');
-  input.value = '';
-  $('#voiceState').textContent = 'Processing';
-  try {
-    const result = await api('/api/assistant/query', { method:'POST', body: JSON.stringify({ query, language: $('#languageSelect').value }) });
-    appendBubble(result.answer, 'assistant');
-    speak(result.answer);
-    await loadDashboard();
-  } catch (error) {
-    appendBubble(`I could not complete that request: ${error.message}`, 'assistant');
-    $('#voiceState').textContent = 'Error';
-  }
-}
-
-function setupSpeechRecognition() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    $('#micButton').disabled = true;
-    $('#micButton').title = 'Speech recognition is not supported by this browser.';
-    return;
-  }
-  const recognition = new SpeechRecognition();
-  recognition.interimResults = false;
-  recognition.continuous = false;
-  recognition.onstart = () => { stopSpeech(); $('#voiceState').textContent = 'Listening'; };
-  recognition.onresult = (event) => {
-    $('#assistantQuery').value = event.results[0][0].transcript;
-    $('#voiceState').textContent = 'Ready';
-  };
-  recognition.onerror = () => { $('#voiceState').textContent = 'Voice input unavailable'; };
-  recognition.onend = () => { if ($('#voiceState').textContent === 'Listening') $('#voiceState').textContent = 'Ready'; };
-  state.recognition = recognition;
-}
-
-function startVoiceInput() {
-  if (!state.recognition) return;
-  stopSpeech();
-  state.recognition.lang = $('#languageSelect').value;
-  try { state.recognition.start(); } catch { /* already active */ }
-}
-
-function openProjectDialog() {
-  $('#projectFormMessage').textContent = '';
-  $('#projectDialog').showModal();
-}
-
-async function createProject(event) {
-  event.preventDefault();
-  const form = new FormData(event.currentTarget);
-  const programmeId = state.dashboard?.programmes?.[0]?.id || '';
-  const payload = Object.fromEntries(form.entries());
-  payload.programmeId = programmeId;
-  payload.budget = Number(payload.budget || 0);
-  try {
-    await api('/api/projects', { method:'POST', body: JSON.stringify(payload) });
-    $('#projectDialog').close();
-    event.currentTarget.reset();
-    await loadDashboard();
-    showSection('projects');
-  } catch (error) {
-    $('#projectFormMessage').textContent = error.message;
-  }
-}
-
-function bindEvents() {
-  $('#loginForm').addEventListener('submit', login);
-  $('#logoutButton').addEventListener('click', signOut);
-  $('#refreshButton').addEventListener('click', loadDashboard);
-  $('#activityRefresh').addEventListener('click', loadDashboard);
-  $('#assistantForm').addEventListener('submit', askAssistant);
-  $('#micButton').addEventListener('click', startVoiceInput);
-  $('#languageSelect').addEventListener('change', stopSpeech);
-  $('#newProjectButton').addEventListener('click', openProjectDialog);
-  $$('[data-new-project]').forEach(b => b.addEventListener('click', openProjectDialog));
-  $('#closeProjectDialog').addEventListener('click', () => $('#projectDialog').close());
-  $('#cancelProject').addEventListener('click', () => $('#projectDialog').close());
-  $('#projectForm').addEventListener('submit', createProject);
-  $$('.nav-item').forEach(b => b.addEventListener('click', () => showSection(b.dataset.section)));
-  $$('[data-go]').forEach(b => b.addEventListener('click', () => showSection(b.dataset.go)));
-  window.addEventListener('beforeunload', stopSpeech);
-}
-
-bindEvents();
-setupSpeechRecognition();
-restoreSession();
+bind();setupSpeech();restoreSession();

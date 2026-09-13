@@ -2,71 +2,104 @@
   "meta": {
     "synthetic": true,
     "label": "Hackathon demonstration data — not a live municipal dataset",
-    "generatedFor": "AquaFlow AI"
+    "generatedFor": "AquaFlow AI",
+    "dataDate": "2026-09-13"
   },
   "programmes": [
-    {
-      "id": "prog-gau-001",
-      "municipality": "Demo Metro Municipality",
-      "name": "Municipal Water Recovery Programme 2026",
-      "owner": "Executive: Water Services",
-      "manager": "Recovery Programme Office",
-      "status": "active",
-      "baselineNRWPercent": 41.8,
-      "targetNRWPercent": 32.0,
-      "targetDate": "2027-06-30"
-    }
+    {"id":"prog-gau-001","tenantId":"demo-metro","municipality":"Demo Metro Municipality","region":"Gauteng","name":"Municipal Water Recovery Programme 2026","owner":"Executive: Water Services","manager":"Recovery Programme Office","status":"active","baselineNRWPercent":41.8,"targetNRWPercent":32.0,"targetDate":"2027-06-30","objectives":["Reduce physical water losses","Improve meter accuracy and billing completeness","Accelerate repair execution and evidence-based closeout"]}
   ],
   "projects": [
-    {"id":"proj-001","programmeId":"prog-gau-001","name":"Central Pressure Zone Leak Reduction","owner":"Water Engineering","status":"at-risk","progress":58,"risk":"high","daysLate":8,"budget":4800000,"actualExpenditure":2710000,"nextMilestone":"Complete trunk-main acoustic survey"},
-    {"id":"proj-002","programmeId":"prog-gau-001","name":"Smart Meter Recovery Pilot","owner":"Revenue Assurance","status":"active","progress":71,"risk":"medium","daysLate":0,"budget":2200000,"actualExpenditure":1360000,"nextMilestone":"Validate 500 anomaly cases"},
-    {"id":"proj-003","programmeId":"prog-gau-001","name":"Reservoir Telemetry Stabilisation","owner":"Operations Technology","status":"active","progress":44,"risk":"medium","daysLate":0,"budget":3100000,"actualExpenditure":1020000,"nextMilestone":"Commission telemetry gateway"}
+    {"id":"proj-001","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Central Pressure Zone Leak Reduction","owner":"Water Engineering","status":"at-risk","progress":58,"risk":"high","daysLate":8,"budget":4800000,"actualExpenditure":2710000,"nextMilestone":"Complete trunk-main acoustic survey","startDate":"2026-06-01","targetDate":"2026-10-15"},
+    {"id":"proj-002","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Smart Meter Recovery Pilot","owner":"Revenue Assurance","status":"active","progress":71,"risk":"medium","daysLate":0,"budget":2200000,"actualExpenditure":1360000,"nextMilestone":"Validate 500 anomaly cases","startDate":"2026-05-15","targetDate":"2026-11-30"},
+    {"id":"proj-003","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Reservoir Telemetry Stabilisation","owner":"Operations Technology","status":"active","progress":44,"risk":"medium","daysLate":0,"budget":3100000,"actualExpenditure":1020000,"nextMilestone":"Commission telemetry gateway","startDate":"2026-07-01","targetDate":"2026-12-15"}
   ],
   "milestones": [
-    {"id":"mil-001","projectId":"proj-001","name":"Complete trunk-main acoustic survey","dueDate":"2026-09-18","status":"in-progress","progress":62},
-    {"id":"mil-002","projectId":"proj-002","name":"Validate 500 anomaly cases","dueDate":"2026-09-25","status":"in-progress","progress":71}
+    {"id":"mil-001","tenantId":"demo-metro","projectId":"proj-001","name":"Complete trunk-main acoustic survey","dueDate":"2026-09-18","status":"in-progress","progress":62,"owner":"Water Engineering"},
+    {"id":"mil-002","tenantId":"demo-metro","projectId":"proj-002","name":"Validate 500 anomaly cases","dueDate":"2026-09-25","status":"in-progress","progress":71,"owner":"Revenue Assurance"},
+    {"id":"mil-003","tenantId":"demo-metro","projectId":"proj-003","name":"Commission telemetry gateway","dueDate":"2026-10-03","status":"not-started","progress":10,"owner":"Operations Technology"}
+  ],
+  "workItems": [
+    {"id":"wi-001","tenantId":"demo-metro","projectId":"proj-001","milestoneId":"mil-001","name":"Acoustic survey — trunk segment CPZ-A","owner":"Field Diagnostics Team","status":"in-progress","priority":"high","dueDate":"2026-09-14","blocked":false},
+    {"id":"wi-002","tenantId":"demo-metro","projectId":"proj-001","milestoneId":"mil-001","name":"Confirm isolation plan for DN600 repair","owner":"Network Control","status":"blocked","priority":"critical","dueDate":"2026-09-12","blocked":true,"blocker":"Awaiting valve integrity confirmation"},
+    {"id":"wi-003","tenantId":"demo-metro","projectId":"proj-002","milestoneId":"mil-002","name":"Field verify top 100 meter anomalies","owner":"Revenue Assurance Field Team","status":"in-progress","priority":"high","dueDate":"2026-09-20","blocked":false}
+  ],
+  "comments": [
+    {"id":"com-001","tenantId":"demo-metro","recordType":"project","recordId":"proj-001","body":"Acoustic survey reprioritised around the recurring burst corridor.","author":"Demo Programme Manager","createdAt":"2026-09-13T08:05:00+02:00"}
   ],
   "incidents": [
-    {"id":"inc-1042","municipality":"Demo Metro Municipality","ward":"Ward 14","zone":"Central Pressure Zone","asset":"DN600 trunk main","category":"burst","severity":"critical","status":"assigned","estimatedLossKlPerDay":520,"populationAffected":18500,"criticalFacilityAffected":true,"openHours":31,"recurrenceCount":2,"assignedTeam":"Water Engineering Team A","location":"Synthetic coordinate area CPZ-14","detectedAt":"2026-09-12T03:20:00+02:00"},
-    {"id":"inc-1038","municipality":"Demo Metro Municipality","ward":"Ward 9","zone":"North Distribution Zone","asset":"Reticulation main NDZ-88","category":"leak","severity":"high","status":"repair-in-progress","estimatedLossKlPerDay":185,"populationAffected":2400,"criticalFacilityAffected":false,"openHours":18,"recurrenceCount":4,"assignedTeam":"Maintenance Team 3","location":"Synthetic coordinate area NDZ-09","detectedAt":"2026-09-12T16:10:00+02:00"},
-    {"id":"inc-1029","municipality":"Demo Metro Municipality","ward":"Ward 21","zone":"South Distribution Zone","asset":"Service connection cluster SDZ-21","category":"meter-anomaly","severity":"medium","status":"verified","estimatedLossKlPerDay":44,"populationAffected":210,"criticalFacilityAffected":false,"openHours":9,"recurrenceCount":1,"assignedTeam":"Revenue Assurance Field Team","location":"Synthetic coordinate area SDZ-21","detectedAt":"2026-09-13T00:40:00+02:00"}
+    {"id":"inc-1042","tenantId":"demo-metro","municipality":"Demo Metro Municipality","ward":"Ward 14","zone":"Central Pressure Zone","asset":"DN600 trunk main","assetId":"asset-dn600-01","category":"burst","severity":"critical","status":"assigned","estimatedLossKlPerDay":520,"populationAffected":18500,"criticalFacilityAffected":true,"openHours":31,"recurrenceCount":2,"assignedTeam":"Water Engineering Team A","location":"Synthetic coordinate area CPZ-14","lat":-26.106,"lng":28.032,"detectedAt":"2026-09-12T03:20:00+02:00"},
+    {"id":"inc-1038","tenantId":"demo-metro","municipality":"Demo Metro Municipality","ward":"Ward 9","zone":"North Distribution Zone","asset":"Reticulation main NDZ-88","assetId":"asset-pipe-88","category":"leak","severity":"high","status":"repair-in-progress","estimatedLossKlPerDay":185,"populationAffected":2400,"criticalFacilityAffected":false,"openHours":18,"recurrenceCount":4,"assignedTeam":"Maintenance Team 3","location":"Synthetic coordinate area NDZ-09","lat":-26.061,"lng":28.041,"detectedAt":"2026-09-12T16:10:00+02:00"},
+    {"id":"inc-1029","tenantId":"demo-metro","municipality":"Demo Metro Municipality","ward":"Ward 21","zone":"South Distribution Zone","asset":"Service connection cluster SDZ-21","category":"meter-anomaly","severity":"medium","status":"verified","estimatedLossKlPerDay":44,"populationAffected":210,"criticalFacilityAffected":false,"openHours":9,"recurrenceCount":1,"assignedTeam":"Revenue Assurance Field Team","location":"Synthetic coordinate area SDZ-21","lat":-26.161,"lng":28.017,"detectedAt":"2026-09-13T00:40:00+02:00"}
   ],
   "workOrders": [
-    {"id":"wo-5501","incidentId":"inc-1042","projectId":"proj-001","description":"Isolate and repair DN600 trunk-main burst","priority":"critical","assignedTeam":"Water Engineering Team A","status":"dispatched","slaHours":12,"estimatedCost":420000},
-    {"id":"wo-5494","incidentId":"inc-1038","projectId":"proj-001","description":"Repair recurring reticulation leak and inspect valve","priority":"high","assignedTeam":"Maintenance Team 3","status":"repair-in-progress","slaHours":24,"estimatedCost":68000}
+    {"id":"wo-5501","tenantId":"demo-metro","incidentId":"inc-1042","projectId":"proj-001","description":"Isolate and repair DN600 trunk-main burst","priority":"critical","assignedTeam":"Water Engineering Team A","contractorId":"contractor-001","status":"dispatched","slaHours":12,"estimatedCost":420000,"createdAt":"2026-09-13T04:30:00+02:00","materials":["DN600 repair clamp","valve packing kit"],"verificationRequired":true},
+    {"id":"wo-5494","tenantId":"demo-metro","incidentId":"inc-1038","projectId":"proj-001","description":"Repair recurring reticulation leak and inspect valve","priority":"high","assignedTeam":"Maintenance Team 3","status":"repair-in-progress","slaHours":24,"estimatedCost":68000,"createdAt":"2026-09-12T17:10:00+02:00","verificationRequired":true}
+  ],
+  "zones": [
+    {"id":"zone-cpz","tenantId":"demo-metro","name":"Central Pressure Zone","population":72000,"pressureBand":"high","risk":"high","lat":-26.106,"lng":28.032},
+    {"id":"zone-ndz","tenantId":"demo-metro","name":"North Distribution Zone","population":54000,"pressureBand":"medium","risk":"medium","lat":-26.061,"lng":28.041},
+    {"id":"zone-sdz","tenantId":"demo-metro","name":"South Distribution Zone","population":68000,"pressureBand":"medium","risk":"medium","lat":-26.161,"lng":28.017}
+  ],
+  "nrw": [
+    {"id":"nrw-cpz-202609","tenantId":"demo-metro","zoneId":"zone-cpz","zone":"Central Pressure Zone","period":"2026-09","systemInputVolumeKl":2820000,"billedAuthorisedConsumptionKl":1610000,"unbilledAuthorisedConsumptionKl":92000,"classification":"synthetic"},
+    {"id":"nrw-ndz-202609","tenantId":"demo-metro","zoneId":"zone-ndz","zone":"North Distribution Zone","period":"2026-09","systemInputVolumeKl":2110000,"billedAuthorisedConsumptionKl":1340000,"unbilledAuthorisedConsumptionKl":63000,"classification":"synthetic"},
+    {"id":"nrw-sdz-202609","tenantId":"demo-metro","zoneId":"zone-sdz","zone":"South Distribution Zone","period":"2026-09","systemInputVolumeKl":2450000,"billedAuthorisedConsumptionKl":1510000,"unbilledAuthorisedConsumptionKl":77000,"classification":"synthetic"}
   ],
   "indicators": [
-    {"id":"kpi-nrw-001","programmeId":"prog-gau-001","name":"Non-revenue water","unit":"%","baseline":41.8,"current":38.6,"target":32.0,"period":"2026-09","classification":"measured-demo"},
-    {"id":"kpi-siv-001","programmeId":"prog-gau-001","name":"System input volume","unit":"ML/day","current":268.4,"period":"2026-09","classification":"synthetic"},
-    {"id":"kpi-bac-001","programmeId":"prog-gau-001","name":"Billed authorised consumption","unit":"ML/day","current":164.8,"period":"2026-09","classification":"synthetic"},
-    {"id":"kpi-response-001","programmeId":"prog-gau-001","name":"Median high-priority repair response","unit":"hours","baseline":29.0,"current":18.5,"target":12.0,"period":"2026-09","classification":"synthetic"}
+    {"id":"kpi-nrw-001","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Non-revenue water","unit":"%","baseline":41.8,"current":38.6,"target":32.0,"period":"2026-09","classification":"measured-demo"},
+    {"id":"kpi-siv-001","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"System input volume","unit":"ML/day","current":268.4,"period":"2026-09","classification":"synthetic"},
+    {"id":"kpi-response-001","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Median high-priority repair response","unit":"hours","baseline":29,"current":18.5,"target":12,"period":"2026-09","classification":"synthetic"}
   ],
   "meters": [
-    {"id":"meter-20041","zone":"South Distribution Zone","accountRef":"SYN-00041","status":"investigate","anomaly":"zero-consumption","confidence":0.94,"lastReadingDays":37,"estimatedMonthlyRevenueAtRisk":4200,"evidence":"12-month consumption dropped to zero after stable usage pattern"},
-    {"id":"meter-18802","zone":"Central Pressure Zone","accountRef":"SYN-01802","status":"investigate","anomaly":"sudden-drop","confidence":0.88,"lastReadingDays":12,"estimatedMonthlyRevenueAtRisk":7600,"evidence":"76% decline against prior seasonal baseline"},
-    {"id":"meter-17771","zone":"North Distribution Zone","accountRef":"SYN-01771","status":"field-check","anomaly":"repeated-estimate","confidence":0.82,"lastReadingDays":91,"estimatedMonthlyRevenueAtRisk":2900,"evidence":"six consecutive estimated readings"}
+    {"id":"meter-20041","tenantId":"demo-metro","zone":"South Distribution Zone","accountReference":"SYN-00041","location":"Ward 21 synthetic meter cluster","status":"investigate","anomalyType":"zero-consumption","confidence":0.94,"daysSinceRead":37,"estimatedMonthlyRevenueRisk":4200,"evidence":"12-month consumption dropped to zero after stable usage pattern"},
+    {"id":"meter-18802","tenantId":"demo-metro","zone":"Central Pressure Zone","accountReference":"SYN-01802","location":"Ward 14 synthetic meter cluster","status":"investigate","anomalyType":"sudden-drop","confidence":0.88,"daysSinceRead":12,"estimatedMonthlyRevenueRisk":17600,"evidence":"76% decline against prior seasonal baseline"},
+    {"id":"meter-17771","tenantId":"demo-metro","zone":"North Distribution Zone","accountReference":"SYN-01771","location":"Ward 9 synthetic meter cluster","status":"field-check","anomalyType":"repeated-estimated","confidence":0.82,"daysSinceRead":91,"estimatedMonthlyRevenueRisk":12900,"evidence":"Six consecutive estimated readings"}
   ],
   "assets": [
-    {"id":"asset-dn600-01","type":"pipe","name":"DN600 Central Trunk Main","zone":"Central Pressure Zone","criticality":"critical","condition":"poor","lastInspection":"2026-08-22","openIncidentId":"inc-1042"},
-    {"id":"asset-res-03","type":"reservoir","name":"North Reservoir 3","zone":"North Distribution Zone","criticality":"high","condition":"fair","lastInspection":"2026-09-05","openIncidentId":null},
-    {"id":"asset-pump-11","type":"pump","name":"South Booster Pump 11","zone":"South Distribution Zone","criticality":"high","condition":"good","lastInspection":"2026-09-08","openIncidentId":null}
+    {"id":"asset-dn600-01","tenantId":"demo-metro","type":"pipe","name":"DN600 Central Trunk Main","zone":"Central Pressure Zone","criticality":"critical","condition":"poor","lastInspection":"2026-08-22","openIncidentId":"inc-1042","installYear":1988},
+    {"id":"asset-pipe-88","tenantId":"demo-metro","type":"pipe","name":"NDZ Reticulation Main 88","zone":"North Distribution Zone","criticality":"high","condition":"poor","lastInspection":"2026-09-01","openIncidentId":"inc-1038","installYear":1994},
+    {"id":"asset-res-03","tenantId":"demo-metro","type":"reservoir","name":"North Reservoir 3","zone":"North Distribution Zone","criticality":"high","condition":"fair","lastInspection":"2026-09-05","openIncidentId":null},
+    {"id":"asset-pump-11","tenantId":"demo-metro","type":"pump","name":"South Booster Pump 11","zone":"South Distribution Zone","criticality":"high","condition":"good","lastInspection":"2026-09-08","openIncidentId":null}
   ],
   "risks": [
-    {"id":"risk-001","programmeId":"prog-gau-001","title":"Recurring failures on ageing trunk main","owner":"Water Engineering","likelihood":"high","impact":"critical","status":"open","mitigation":"Accelerate acoustic survey and condition-based replacement plan"},
-    {"id":"risk-002","programmeId":"prog-gau-001","title":"Incomplete meter-reading coverage","owner":"Revenue Assurance","likelihood":"medium","impact":"high","status":"mitigating","mitigation":"Prioritise long-unread meters and field verification"}
+    {"id":"risk-001","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Recurring failures on ageing trunk main","owner":"Water Engineering","level":"critical","likelihood":"high","impact":"critical","status":"open","mitigation":"Accelerate acoustic survey and condition-based replacement plan"},
+    {"id":"risk-002","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Incomplete meter-reading coverage","owner":"Revenue Assurance","level":"high","likelihood":"medium","impact":"high","status":"mitigating","mitigation":"Prioritise long-unread meters and field verification"}
   ],
   "approvals": [
-    {"id":"approval-001","type":"work-order-cost","recordId":"wo-5501","description":"Emergency repair expenditure above delegated threshold","requestedBy":"Demo Programme Manager","status":"pending","amount":420000,"currency":"ZAR","createdAt":"2026-09-13T07:15:00+02:00"}
+    {"id":"approval-001","tenantId":"demo-metro","subject":"Emergency repair expenditure above delegated threshold","type":"work-order-cost","recordType":"workOrder","recordId":"wo-5501","requestedBy":"Demo Programme Manager","status":"pending","amount":420000,"currency":"ZAR","createdAt":"2026-09-13T07:15:00+02:00"}
   ],
   "contractors": [
-    {"id":"contractor-001","name":"Demo Civil Response JV","status":"active","openWorkOrders":1,"slaCompliancePercent":86,"verificationStatus":"demo-only"}
+    {"id":"contractor-001","tenantId":"demo-metro","name":"Demo Civil Response JV","status":"active","openWorkOrders":1,"slaCompliancePercent":86,"verificationStatus":"demo-only","contact":"Synthetic contractor contact"}
+  ],
+  "budgets": [
+    {"id":"bud-001","tenantId":"demo-metro","programmeId":"prog-gau-001","name":"Water Recovery Programme Budget","approvedBudget":10100000,"committed":6930000,"actual":5090000,"currency":"ZAR","period":"2026/27"}
+  ],
+  "expenditures": [
+    {"id":"exp-001","tenantId":"demo-metro","projectId":"proj-001","description":"Leak detection and emergency repair activity","amount":2710000,"currency":"ZAR","status":"posted-demo","period":"2026-09"},
+    {"id":"exp-002","tenantId":"demo-metro","projectId":"proj-002","description":"Meter field-verification pilot","amount":1360000,"currency":"ZAR","status":"posted-demo","period":"2026-09"}
   ],
   "revenue": [
-    {"id":"rev-001","programmeId":"prog-gau-001","description":"Smart-meter anomaly recovery","projectedRecovery":1850000,"aiEstimatedRecovery":1620000,"verifiedRealisedRecovery":620000,"currency":"ZAR"}
+    {"id":"rev-001","tenantId":"demo-metro","programmeId":"prog-gau-001","description":"Smart-meter anomaly recovery","projectedRecovery":1850000,"aiEstimatedRecovery":1620000,"verifiedRealisedRecovery":620000,"currency":"ZAR","period":"2026-09"}
+  ],
+  "interventions": [
+    {"id":"int-001","tenantId":"demo-metro","programmeId":"prog-gau-001","projectId":"proj-001","name":"Critical DN600 burst recovery intervention","owner":"Water Engineering","status":"in-progress","expectedWaterSavingKlPerDay":520,"expectedRevenueProtection":310000,"classification":"operational-demo"}
+  ],
+  "documents": [
+    {"id":"doc-001","tenantId":"demo-metro","name":"Synthetic Water Recovery Plan Extract","recordType":"programme","recordId":"prog-gau-001","mimeType":"application/pdf","status":"metadata-demo","note":"No binary document is included in the repository."}
+  ],
+  "evidence": [
+    {"id":"ev-001","tenantId":"demo-metro","recordType":"workOrder","recordId":"wo-5494","type":"field-photo-reference","description":"Synthetic repair progress evidence reference","verificationStatus":"pending","capturedAt":"2026-09-13T07:40:00+02:00"}
+  ],
+  "notifications": [
+    {"id":"not-001","tenantId":"demo-metro","message":"Critical incident inc-1042 is approaching its response SLA.","severity":"critical","recordType":"incident","recordId":"inc-1042","read":false,"createdAt":"2026-09-13T08:20:00+02:00"},
+    {"id":"not-002","tenantId":"demo-metro","message":"Approval required for emergency repair expenditure on wo-5501.","severity":"high","recordType":"approval","recordId":"approval-001","read":false,"createdAt":"2026-09-13T07:15:00+02:00"}
   ],
   "activities": [
-    {"id":"act-001","timestamp":"2026-09-13T08:42:00+02:00","user":"Demo Programme Manager","action":"Updated project risk to high","recordType":"project","recordId":"proj-001"},
-    {"id":"act-002","timestamp":"2026-09-13T08:27:00+02:00","user":"Demo Dispatch Controller","action":"Dispatched critical work order","recordType":"workOrder","recordId":"wo-5501"},
-    {"id":"act-003","timestamp":"2026-09-13T07:54:00+02:00","user":"AquaFlow AI","action":"Flagged incident for executive attention using explainable prioritisation","recordType":"incident","recordId":"inc-1042"}
+    {"id":"act-001","tenantId":"demo-metro","timestamp":"2026-09-13T08:42:00+02:00","user":"Demo Programme Manager","action":"Updated project risk to high","recordType":"project","recordId":"proj-001"},
+    {"id":"act-002","tenantId":"demo-metro","timestamp":"2026-09-13T08:27:00+02:00","user":"Demo Dispatch Controller","action":"Dispatched critical work order","recordType":"workOrder","recordId":"wo-5501"},
+    {"id":"act-003","tenantId":"demo-metro","timestamp":"2026-09-13T07:54:00+02:00","user":"AquaFlow AI","action":"Flagged incident for executive attention using explainable prioritisation","recordType":"incident","recordId":"inc-1042"}
+  ],
+  "users": [
+    {"id":"user-demo-admin","tenantId":"demo-metro","name":"AquaFlow Demo Administrator","role":"System Administrator","status":"active","synthetic":true}
   ]
 }
