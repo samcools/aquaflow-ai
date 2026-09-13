@@ -1,0 +1,1 @@
+No alternate AquaFlow icon is used as a primary brand mark. Pyrneo remains the single visible logo.
