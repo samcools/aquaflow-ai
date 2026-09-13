@@ -10,14 +10,22 @@ process.env.DEMO_ADMIN_EMAIL = 'demo@aquaflow.local';
 process.env.DEMO_ADMIN_PASSWORD = 'ChangeMe!2026';
 process.env.SESSION_SECRET = 'test-session-secret-that-is-long-enough-for-aquaflow';
 
-const { app } = require('../backend/app');
+const { httpApp } = require('../backend/http');
 
 let server;
 let baseUrl;
 
+async function login(role = 'Executive') {
+  return fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: 'demo@aquaflow.local', password: 'ChangeMe!2026', role })
+  });
+}
+
 test.before(async () => {
   await new Promise(resolve => {
-    server = app.listen(0, '127.0.0.1', () => {
+    server = httpApp.listen(0, '127.0.0.1', () => {
       const address = server.address();
       baseUrl = `http://127.0.0.1:${address.port}`;
       resolve();
@@ -37,30 +45,22 @@ test('health endpoint starts and identifies AquaFlow', async () => {
   assert.equal(body.service, 'AquaFlow AI');
 });
 
-test('demo login returns an expiring authenticated session', async () => {
-  const response = await fetch(`${baseUrl}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      email: 'demo@aquaflow.local',
-      password: 'ChangeMe!2026',
-      role: 'Executive'
-    })
-  });
+test('demo login returns token and HttpOnly same-site session cookie', async () => {
+  const response = await login('Executive');
   assert.equal(response.status, 200);
   const body = await response.json();
   assert.ok(body.token);
   assert.equal(body.user.role, 'Executive');
   assert.ok(body.expiresIn > 0);
+  const cookie = response.headers.get('set-cookie') || '';
+  assert.match(cookie, /aquaflow_session=/);
+  assert.match(cookie.toLowerCase(), /httponly/);
+  assert.match(cookie.toLowerCase(), /samesite=strict/);
 });
 
 test('authenticated executive can retrieve tenant-scoped dashboard', async () => {
-  const login = await fetch(`${baseUrl}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email: 'demo@aquaflow.local', password: 'ChangeMe!2026', role: 'Executive' })
-  });
-  const { token } = await login.json();
+  const loginResponse = await login('Executive');
+  const { token } = await loginResponse.json();
   const response = await fetch(`${baseUrl}/api/dashboard`, { headers: { authorization: `Bearer ${token}` } });
   assert.equal(response.status, 200);
   const body = await response.json();
@@ -70,13 +70,19 @@ test('authenticated executive can retrieve tenant-scoped dashboard', async () =>
   assert.ok(body.summary);
 });
 
+test('session cookie authenticates browser-style report download', async () => {
+  const loginResponse = await login('Executive');
+  const cookie = (loginResponse.headers.get('set-cookie') || '').split(';')[0];
+  const response = await fetch(`${baseUrl}/api/reports/projects.csv`, { headers: { cookie } });
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type') || '', /text\/csv/);
+  const body = await response.text();
+  assert.match(body, /Central Pressure Zone Leak Reduction/);
+});
+
 test('read-only user cannot create a project', async () => {
-  const login = await fetch(`${baseUrl}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email: 'demo@aquaflow.local', password: 'ChangeMe!2026', role: 'Read-Only Oversight User' })
-  });
-  const { token } = await login.json();
+  const loginResponse = await login('Read-Only Oversight User');
+  const { token } = await loginResponse.json();
   const response = await fetch(`${baseUrl}/api/projects`, {
     method: 'POST',
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
