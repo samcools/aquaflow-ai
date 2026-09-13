@@ -1,0 +1,1 @@
+Pyrneo exact supplied wordmark; transparent visual treatment.
