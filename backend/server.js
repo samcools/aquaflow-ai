@@ -1,9 +1,9 @@
 'use strict';
 
-const { app } = require('./app');
+const { httpApp } = require('./http');
 
 const port = Number(process.env.PORT || 8000);
-const server = app.listen(port, () => {
+const server = httpApp.listen(port, () => {
   console.log(`AquaFlow AI listening on http://localhost:${port}`);
 });
 
