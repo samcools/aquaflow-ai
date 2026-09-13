@@ -1,0 +1,1 @@
+Pyrneo wordmark retained exactly; black background removed at display time.
