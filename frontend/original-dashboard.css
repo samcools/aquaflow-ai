@@ -1,0 +1,82 @@
+/* AquaFlow original-dashboard visual restoration.
+   Loaded after styles.css so the validated application behavior remains intact. */
+:root{
+  --af-navy:#083b78;
+  --af-navy-2:#0c4f9c;
+  --af-blue:#1988ef;
+  --af-sky:#eaf6ff;
+  --af-panel:#ffffff;
+  --af-line:#c8dcf1;
+  --af-bg:#eef7ff;
+  --af-text:#092d61;
+  --af-muted:#6884a6;
+  --af-good:#18ad76;
+  --af-warn:#f5a313;
+  --af-danger:#e54235;
+}
+
+body{background:var(--af-bg);color:var(--af-text)}
+.app-shell{display:block;min-height:100vh;background:linear-gradient(180deg,#edf7ff 0,#f8fbff 66%,#edf7ff 100%)}
+.sidebar{
+  position:sticky;top:0;z-index:50;width:100%;height:auto;min-height:76px;
+  display:flex;align-items:center;gap:10px;padding:0 18px;background:linear-gradient(90deg,#063776,#0e58aa);
+  border-right:0;border-bottom:1px solid rgba(255,255,255,.16);box-shadow:0 3px 18px rgba(9,49,98,.18)
+}
+.brand-stack{display:flex;align-items:center;gap:12px;min-width:280px;padding:8px 18px 8px 0;border-right:1px solid rgba(255,255,255,.12)}
+.brand-stack .sidebar-logo{height:25px;width:auto;filter:brightness(0) invert(1);opacity:.95}
+.aquaflow-name{display:flex;align-items:center;gap:8px;color:#fff}.aquaflow-name strong{color:#fff;font-size:16px}.aquaflow-name span{color:#d6e9ff;font-size:10px}.aquaflow-name .aqua-symbol{display:none}
+.aquaflow-brandmark{width:142px;height:auto;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))}
+#primaryNav{display:flex;align-items:stretch;gap:0;flex:1;overflow-x:auto;scrollbar-width:none}
+#primaryNav::-webkit-scrollbar{display:none}
+.nav-item{min-width:max-content;padding:26px 14px;border-radius:0;background:transparent;color:#fff;border:0;font-weight:750;font-size:12px;display:flex;align-items:center;gap:7px}
+.nav-item:hover{background:rgba(255,255,255,.08)}
+.nav-item.active{background:rgba(27,139,244,.42);box-shadow:inset 0 -4px 0 #50b9ff;color:#fff}
+.nav-item span{display:none}
+.agent-sidebar-button{margin-left:auto;min-width:54px;width:54px;height:44px;border-radius:10px;padding:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.20);display:grid;place-items:center;color:#fff}
+.agent-sidebar-button>span:last-child{display:none}.mini-orb{display:grid;place-items:center;width:30px;height:30px;margin:0}.mini-orb i{display:none}
+.sidebar-footer{display:flex;align-items:center;gap:8px;margin:0;padding:0;border:0}.sidebar-footer .tenant{display:none}.sidebar-footer #logoutButton{color:#fff;border-color:rgba(255,255,255,.22);padding:8px 10px}
+
+.main{margin:0;width:100%;max-width:none;padding:0 0 40px}
+.topbar{background:#fff;padding:14px 22px;border-bottom:1px solid var(--af-line);display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:76px}
+.topbar h1{font-size:22px;margin:2px 0;color:#08366f}.topbar .eyebrow{font-size:9px;color:#3986ca}.page-subtitle{color:var(--af-muted);font-size:12px}
+.top-actions{gap:8px;flex-wrap:wrap}.top-actions .btn,.top-actions .badge{font-size:11px}
+#alertBar{margin:0;border-radius:0;border-left:0;border-right:0;background:#fff7d8;color:#725000;border-color:#efcf5f;padding:6px 22px;font-size:10px;text-align:center}
+.section{padding:14px 16px 0;max-width:1600px;margin:0 auto}
+
+.metric-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.metric-card{background:#fff;border:1px solid #bcd8f2;border-radius:11px;box-shadow:0 2px 8px rgba(14,78,136,.04);padding:15px 15px 14px;min-height:96px;position:relative;overflow:hidden}
+.metric-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#228ee9}.metric-card.good::before{background:var(--af-good)}.metric-card.attention::before{background:var(--af-warn)}.metric-card.danger::before{background:var(--af-danger)}
+.metric-label{font-weight:800;color:#123b6d;font-size:11px}.metric-value{font-size:27px;color:#08366f;letter-spacing:.2px}.metric-note{color:#718aa7;font-size:10px}
+
+.command-visual-grid{display:grid;grid-template-columns:280px minmax(0,1fr);gap:12px;align-items:stretch}
+.ayanda-spotlight{order:-1;background:linear-gradient(180deg,#073d7e,#0a4d91);color:#fff;border-color:#105da6;display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 14px}
+.ayanda-spotlight .eyebrow,.ayanda-spotlight .muted{color:#d7ebff}.ayanda-spotlight h2{color:#fff}.ayanda-spotlight .agent-orb{margin:6px 0 10px}.ayanda-spotlight .prompt-grid{display:grid;grid-template-columns:1fr;gap:7px;width:100%;margin-top:10px}.ayanda-spotlight .prompt-chip{background:linear-gradient(180deg,#128ff2,#0773cf);border:1px solid #42aaf9;color:#fff;justify-content:flex-start;font-weight:700}.ayanda-spotlight .wide-button{width:100%;margin-top:10px;background:#fff;color:#0b4b8f;border-color:#fff}
+.recovery-pulse-panel{min-height:360px;background:#fff}.panel{border-radius:11px;border:1px solid #bcd8f2;box-shadow:0 2px 8px rgba(14,78,136,.04);background:#fff}.panel h2{color:#0b3a73}.panel-head{border-bottom:1px solid #d8e7f5;padding-bottom:10px;margin-bottom:12px}
+.recovery-chain{background:#f4f9fe;border:1px solid #d2e4f5;border-radius:9px;padding:14px}.flow-node span{background:#e6f3ff;color:#0c61b5}.flow-node strong{color:#0b3f7b}.flow-link{background:#91bee4}.visual-kpi{border-top:1px solid #e3edf7;padding-top:10px}.visual-bar{height:10px;background:#e7f2fb}.visual-bar i{background:linear-gradient(90deg,#158ded,#10b786)}
+
+.content-grid{gap:12px;margin-top:12px}.content-grid.two-one{grid-template-columns:minmax(0,2fr) minmax(300px,1fr)}.content-grid.thirds{grid-template-columns:repeat(3,minmax(0,1fr))}
+.incident-row,.compact-row,.focus-item,.kpi-line{border-bottom:1px solid #e2edf7}.focus-icon{background:#e9f4ff;color:#0f6cc4}.text-button{color:#0c6bc5;font-weight:750}
+.section-toolbar{background:#fff;border:1px solid var(--af-line);border-radius:10px;padding:14px 16px;margin-bottom:10px}.tabs{background:#e9f4fe;border:1px solid #c4ddf3;border-radius:9px;padding:4px}.tab.active{background:#0f76d6;color:#fff;box-shadow:none}.table-wrap table{border-collapse:separate;border-spacing:0}.table-wrap thead th{background:#edf6fe;color:#0b3b74;border-bottom:1px solid #bad7ef}.table-wrap tbody tr:hover{background:#f3f9ff}
+
+/* One fixed assistant icon and one assistant surface across every page. */
+.agent-launcher{position:fixed;right:18px;bottom:18px;z-index:65;background:linear-gradient(180deg,#128ff2,#0769bd);color:#fff;border:2px solid #fff;box-shadow:0 10px 28px rgba(4,57,111,.3);border-radius:44px;min-width:152px;height:58px;padding:6px 15px 6px 8px}
+.launcher-orb,.orb-core,.mini-orb{background:transparent!important;border:0!important;box-shadow:none!important}
+.ayanda-bot-icon{width:42px;height:42px;display:block}.agent-orb .ayanda-bot-icon{width:74px;height:74px}.mini-orb .ayanda-bot-icon{width:28px;height:28px}.agent-sidebar-button .ayanda-bot-icon{width:30px;height:30px}
+.agent-launcher .launcher-copy strong{font-size:13px}.agent-launcher .launcher-copy small{color:#d8edff}.launcher-bars i{background:#fff}
+.voice-agent{border-left:1px solid #9fc9ec;box-shadow:-16px 0 42px rgba(6,55,108,.25);background:#f7fbff}.agent-header{background:linear-gradient(90deg,#073d7e,#0a58a6);color:#fff}.agent-header h2,.agent-header .eyebrow,.agent-header .agent-context{color:#fff}.agent-context-card{border:1px solid #c5dcf1;background:#fff}.assistant-bubble{border:1px solid #c7ddf2;background:#fff}.user-bubble{background:#0d78d8;color:#fff}.assistant-input{border-top:1px solid #c8def2;background:#fff}.voice-controls{background:#edf7ff;border-top:1px solid #c8def2}.mic-button{background:#0e79da;color:#fff}.mic-button.listening{background:#df382f}.live-transcript{background:#fff7d8;border-color:#efcf5f;color:#6f4f00}
+
+/* Login retains Pyrneo but adds AquaFlow product identity. */
+.login-shell{background:radial-gradient(circle at 30% 20%,#edf8ff,#dfeffc 42%,#cfe5f8)}.login-card{border:1px solid #b8d5ee;box-shadow:0 20px 55px rgba(9,57,105,.18)}
+.login-aquaflow-logo{width:255px;max-width:90%;margin:4px auto 12px;display:block}.product-lockup .aqua-symbol{display:none}.product-lockup{justify-content:center}.product-lockup .eyebrow,.product-lockup h1{display:none}
+
+/* Voice/language status affordance */
+.voice-locale-status{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:750;color:#356789;background:#eaf5ff;border:1px solid #bfddf5;border-radius:999px;padding:4px 8px}.voice-locale-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#16ad76;box-shadow:0 0 0 3px rgba(22,173,118,.12)}
+.wake-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#0b579d}.wake-badge.listening{color:#0c8d62}
+
+@media (max-width:1180px){
+  .brand-stack{min-width:220px}.brand-stack .sidebar-logo{display:none}.nav-item{padding:25px 10px;font-size:11px}.metric-grid{grid-template-columns:repeat(4,1fr)}.command-visual-grid{grid-template-columns:250px 1fr}.content-grid.thirds{grid-template-columns:1fr 1fr}
+}
+@media (max-width:860px){
+  .sidebar{position:sticky;display:grid;grid-template-columns:1fr auto;gap:6px;padding:8px 10px}.brand-stack{min-width:0;border:0;padding:0}.aquaflow-brandmark{width:125px}#primaryNav{grid-column:1/-1;order:3;width:100%;overflow-x:auto}.nav-item{padding:10px 12px;border-radius:8px}.agent-sidebar-button{grid-column:2;grid-row:1}.sidebar-footer{display:none}.topbar{padding:12px 14px;align-items:flex-start}.top-actions{justify-content:flex-end}.metric-grid{grid-template-columns:1fr 1fr}.command-visual-grid{grid-template-columns:1fr}.ayanda-spotlight{order:0}.content-grid.two-one,.content-grid.thirds{grid-template-columns:1fr}.section{padding:10px}.agent-launcher{right:12px;bottom:12px;min-width:58px;width:58px;padding:6px}.agent-launcher .launcher-copy,.agent-launcher .launcher-bars{display:none}.voice-agent{width:min(100%,430px)}
+}
+@media (max-width:520px){.metric-grid{grid-template-columns:1fr}.topbar{display:block}.top-actions{margin-top:8px;justify-content:flex-start}.top-actions .agent-trigger{display:none}.recovery-chain{overflow-x:auto}.section-toolbar{display:block}.section-toolbar>div:last-child{margin-top:10px}.agent-launcher{height:54px;width:54px}.agent-launcher .ayanda-bot-icon{width:38px;height:38px}}

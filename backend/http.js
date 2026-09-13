@@ -1,6 +1,8 @@
 'use strict';
 
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const { app, store, config } = require('./app');
 const { authMiddleware } = require('./lib/auth');
 const { hasPermission } = require('./lib/policy');
@@ -10,6 +12,7 @@ const { buildVoiceRouter } = require('./voice-router');
 const httpApp = express();
 const COOKIE_NAME = 'aquaflow_session';
 const auth = authMiddleware(config.tokenSecret);
+const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 
 function parseCookies(header) {
   const cookies = {};
@@ -105,6 +108,25 @@ httpApp.get('/api/imports/history', auth, (req, res) => {
 });
 
 httpApp.use(buildVoiceRouter({ store, tokenSecret: config.tokenSecret }));
+
+// Serve the validated base UI with the original dashboard restoration and
+// the single global Ayanda controller injected after the base bundle. The
+// base index remains untouched, making the enhancement reversible and easy
+// to test independently.
+function serveEnhancedIndex(_req, res, next) {
+  try {
+    const indexPath = path.join(FRONTEND_DIR, 'index.html');
+    let html = fs.readFileSync(indexPath, 'utf8');
+    html = html.replace('</head>', '  <link rel="stylesheet" href="/original-dashboard.css">\n</head>');
+    html = html.replace('</body>', '  <script src="/original-dashboard.js"></script>\n</body>');
+    res.type('html').send(html);
+  } catch (error) {
+    next(error);
+  }
+}
+
+httpApp.get('/', serveEnhancedIndex);
+httpApp.get('/index.html', serveEnhancedIndex);
 httpApp.use(app);
 
-module.exports = { httpApp, parseCookies, COOKIE_NAME };
+module.exports = { httpApp, parseCookies, COOKIE_NAME, serveEnhancedIndex };

@@ -45,6 +45,29 @@ test('health endpoint starts and identifies AquaFlow', async () => {
   assert.equal(body.service, 'AquaFlow AI');
 });
 
+test('root page injects original-dashboard and unified Ayanda assets', async () => {
+  const response = await fetch(`${baseUrl}/`);
+  assert.equal(response.status, 200);
+  const body = await response.text();
+  assert.match(body, /original-dashboard\.css/);
+  assert.match(body, /original-dashboard\.js/);
+  assert.match(body, /AquaFlow AI/);
+});
+
+test('AquaFlow logo and unified voice controller are served', async () => {
+  const [logoResponse, voiceResponse] = await Promise.all([
+    fetch(`${baseUrl}/aquaflow-logo.svg`),
+    fetch(`${baseUrl}/original-dashboard.js`)
+  ]);
+  assert.equal(logoResponse.status, 200);
+  assert.equal(voiceResponse.status, 200);
+  assert.match(await logoResponse.text(), /AquaFlow/);
+  const voiceBody = await voiceResponse.text();
+  assert.match(voiceBody, /Hey, Ayanda/);
+  assert.match(voiceBody, /ayanda-bot-icon/);
+  assert.match(voiceBody, /speechSynthesis\.cancel/);
+});
+
 test('demo login returns token and HttpOnly same-site session cookie', async () => {
   const response = await login('Executive');
   assert.equal(response.status, 200);
