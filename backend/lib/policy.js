@@ -1,5 +1,9 @@
 'use strict';
 
+const FINANCE_PERMISSIONS = ['dashboard.read','programme.read','project.read','workorder.read','contractor.read','risk.read','finance.*','revenue.*','approval.read','approval.decide','document.*','audit.read','search.read','ai.query'];
+const REVENUE_PERMISSIONS = ['dashboard.read','programme.read','project.read','incident.read','meter.*','revenue.*','risk.read','workitem.*','comment.*','document.*','evidence.*','search.read','ai.query','audit.read'];
+const READ_ONLY_PERMISSIONS = ['dashboard.read','programme.read','project.read','milestone.read','workitem.read','incident.read','workorder.read','asset.read','meter.read','contractor.read','risk.read','document.read','evidence.read','approval.read','finance.read','revenue.read','search.read','ai.query'];
+
 const BASE_ROLE_PERMISSIONS = {
   'System Administrator': ['*'],
   'Municipal Administrator': ['programme.*','project.*','milestone.*','workitem.*','comment.*','incident.*','workorder.*','asset.*','meter.*','contractor.*','risk.*','document.*','evidence.*','notification.*','search.read','dashboard.read','audit.read','ai.query','approval.read','approval.decide','finance.read','revenue.read'],
@@ -8,11 +12,14 @@ const BASE_ROLE_PERMISSIONS = {
   'Project Manager': ['dashboard.read','programme.read','project.read','project.update','milestone.*','workitem.*','comment.*','incident.read','workorder.read','workorder.create','risk.*','document.*','evidence.*','notification.*','search.read','audit.read','ai.query','approval.read','finance.read','revenue.read'],
   'Engineer': ['dashboard.read','programme.read','project.read','milestone.read','workitem.read','workitem.update','comment.*','incident.*','workorder.*','asset.*','meter.read','risk.read','document.*','evidence.*','notification.read','search.read','ai.query'],
   'Field Technician': ['dashboard.read','project.read','workitem.read','workitem.update','comment.*','incident.read','incident.update','workorder.read','workorder.update','asset.read','document.create','document.read','evidence.*','notification.read','search.read','ai.query'],
-  'Finance': ['dashboard.read','programme.read','project.read','workorder.read','contractor.read','risk.read','finance.*','revenue.*','approval.read','approval.decide','document.*','audit.read','search.read','ai.query'],
-  'Revenue Assurance': ['dashboard.read','programme.read','project.read','incident.read','meter.*','revenue.*','risk.read','workitem.*','comment.*','document.*','evidence.*','search.read','ai.query','audit.read'],
+  'Finance': FINANCE_PERMISSIONS,
+  'Finance User': FINANCE_PERMISSIONS,
+  'Revenue Assurance': REVENUE_PERMISSIONS,
+  'Revenue Assurance User': REVENUE_PERMISSIONS,
   'Contractor': ['dashboard.read','project.read','workitem.read','workitem.update','comment.create','comment.read','incident.read','workorder.read','workorder.update','document.create','document.read','evidence.*','notification.read','search.read'],
   'Auditor': ['dashboard.read','programme.read','project.read','milestone.read','workitem.read','comment.read','incident.read','workorder.read','asset.read','meter.read','contractor.read','risk.read','document.read','evidence.read','approval.read','finance.read','revenue.read','audit.read','search.read'],
-  'Read-Only Oversight': ['dashboard.read','programme.read','project.read','milestone.read','workitem.read','incident.read','workorder.read','asset.read','meter.read','contractor.read','risk.read','document.read','evidence.read','approval.read','finance.read','revenue.read','search.read','ai.query']
+  'Read-Only Oversight': READ_ONLY_PERMISSIONS,
+  'Read-Only Oversight User': READ_ONLY_PERMISSIONS
 };
 
 const ROLE_PERMISSIONS = new Proxy(BASE_ROLE_PERMISSIONS, {
