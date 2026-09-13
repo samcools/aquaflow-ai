@@ -1,0 +1,48 @@
+name: AquaFlow CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Syntax checks
+        run: npm run check
+
+      - name: Automated tests
+        run: npm test
+
+      - name: Prevent committed runtime data
+        shell: bash
+        run: |
+          if git ls-files --error-unmatch data/runtime.json >/dev/null 2>&1; then
+            echo 'data/runtime.json must not be committed.'
+            exit 1
+          fi
+
+      - name: Basic secret-pattern guard
+        shell: bash
+        run: |
+          if grep -RInE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16})' --exclude-dir=.git --exclude='*.md' .; then
+            echo 'Potential secret material found in repository.'
+            exit 1
+          fi

@@ -1,0 +1,20 @@
+{
+  "name": "aquaflow-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AquaFlow AI — Turning Municipal Water Recovery Plans into Accountable Delivery",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check backend/server.js && node --check backend/lib/domain.js && node --check frontend/app.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "helmet": "^8.1.0"
+  }
+}

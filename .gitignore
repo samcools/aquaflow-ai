@@ -23,6 +23,8 @@ logs/
 uploads/
 storage/private/
 tmp/
+data/runtime.json
+data/*.tmp
 *.sqlite
 *.db
 

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#061427">
+  <meta name="description" content="AquaFlow AI — Turning Municipal Water Recovery Plans into Accountable Delivery">
+  <title>AquaFlow AI</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="loginView" class="login-shell">
+    <section class="login-card" aria-labelledby="loginTitle">
+      <div class="brand-mark" aria-hidden="true">A</div>
+      <p class="eyebrow">PYRNEO · MUNICIPAL INTELLIGENCE</p>
+      <h1 id="loginTitle">AquaFlow AI</h1>
+      <p class="subtitle">Turning Municipal Water Recovery Plans into Accountable Delivery</p>
+      <form id="loginForm" class="stack">
+        <label>Email<input id="email" type="email" autocomplete="username" value="demo@aquaflow.local" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" placeholder="Demo password from local environment" required></label>
+        <button class="btn primary" type="submit">Sign in securely</button>
+      </form>
+      <p id="loginMessage" class="form-message" role="alert"></p>
+      <p class="microcopy">Hackathon demonstration environment. Synthetic data only.</p>
+    </section>
+  </div>
+
+  <div id="appView" class="app-shell" hidden>
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand-row"><div class="brand-mark small">A</div><div><strong>AquaFlow AI</strong><span>Pyrneo</span></div></div>
+      <nav>
+        <button class="nav-item active" data-section="command">Command Centre</button>
+        <button class="nav-item" data-section="projects">Projects</button>
+        <button class="nav-item" data-section="incidents">Incidents</button>
+        <button class="nav-item" data-section="revenue">Revenue Recovery</button>
+        <button class="nav-item" data-section="activity">Audit & Activity</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="tenant"><span class="status-dot"></span><div><strong>Demo Metro</strong><small>Synthetic tenant</small></div></div>
+        <button id="logoutButton" class="btn ghost">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><p class="eyebrow">MUNICIPAL WATER RECOVERY</p><h1 id="pageTitle">Executive Command Centre</h1></div>
+        <div class="top-actions"><span id="dataBadge" class="badge info">Synthetic data</span><button id="refreshButton" class="btn ghost">Refresh</button><button id="newProjectButton" class="btn primary">+ New project</button></div>
+      </header>
+
+      <div id="alertBar" class="alert" role="status">AquaFlow is operating on synthetic hackathon demonstration data. No live municipal systems are connected.</div>
+
+      <section id="commandSection" class="section active-section">
+        <div id="metricGrid" class="metric-grid" aria-label="Executive metrics"></div>
+
+        <div class="content-grid two-one">
+          <section class="panel">
+            <div class="panel-head"><div><p class="eyebrow">PRIORITISED RESPONSE</p><h2>Incidents requiring attention</h2></div><button class="text-button" data-go="incidents">View all</button></div>
+            <div id="priorityIncidents"></div>
+          </section>
+          <section class="panel assistant-panel">
+            <div class="panel-head"><div><p class="eyebrow">AYANDA · AI ASSISTANT</p><h2>Executive briefing</h2></div><span id="voiceState" class="badge">Ready</span></div>
+            <div id="assistantConversation" class="conversation" aria-live="polite">
+              <div class="assistant-bubble">Ask about water loss, late projects, revenue recovery or executive risks. Answers are grounded in the current authorised demo dataset.</div>
+            </div>
+            <form id="assistantForm" class="assistant-input">
+              <label class="sr-only" for="assistantQuery">Ask AquaFlow</label>
+              <input id="assistantQuery" placeholder="e.g. What is causing the greatest water loss?" autocomplete="off">
+              <button id="micButton" type="button" class="icon-btn" aria-label="Start voice input">🎙</button>
+              <button type="submit" class="btn primary">Ask</button>
+            </form>
+            <div class="voice-controls"><label>Language<select id="languageSelect"><option value="en-ZA">English (South Africa)</option><option value="af-ZA">Afrikaans</option><option value="zu-ZA">isiZulu</option><option value="xh-ZA">isiXhosa</option><option value="st-ZA">Sesotho</option><option value="tn-ZA">Setswana</option></select></label><label class="switch"><input id="speakToggle" type="checkbox" checked><span>Speak responses</span></label></div>
+          </section>
+        </div>
+
+        <div class="content-grid half">
+          <section class="panel"><div class="panel-head"><div><p class="eyebrow">DELIVERY</p><h2>Projects at a glance</h2></div><button class="text-button" data-go="projects">Manage</button></div><div id="projectPreview"></div></section>
+          <section class="panel"><div class="panel-head"><div><p class="eyebrow">ACCOUNTABILITY</p><h2>Recent activity</h2></div><button class="text-button" data-go="activity">Audit trail</button></div><div id="activityPreview"></div></section>
+        </div>
+      </section>
+
+      <section id="projectsSection" class="section" hidden>
+        <div class="panel"><div class="panel-head"><div><p class="eyebrow">PROGRAMME DELIVERY</p><h2>Projects</h2></div><button class="btn primary" data-new-project>+ New project</button></div><div class="table-wrap"><table><thead><tr><th>Project</th><th>Owner</th><th>Status</th><th>Progress</th><th>Risk</th><th>Budget</th><th>Next milestone</th></tr></thead><tbody id="projectsTable"></tbody></table></div></div>
+      </section>
+
+      <section id="incidentsSection" class="section" hidden>
+        <div class="panel"><div class="panel-head"><div><p class="eyebrow">WATER OPERATIONS</p><h2>Incident register</h2></div><span class="badge">Detected → Verified → Assigned → Dispatched → Repair → Verified → Closed</span></div><div class="table-wrap"><table><thead><tr><th>Incident</th><th>Zone / asset</th><th>Severity</th><th>Status</th><th>Est. loss</th><th>Priority</th><th>Assigned team</th></tr></thead><tbody id="incidentsTable"></tbody></table></div></div>
+      </section>
+
+      <section id="revenueSection" class="section" hidden>
+        <div class="content-grid half"><div class="panel"><p class="eyebrow">REVENUE ASSURANCE</p><h2>Recovery position</h2><div id="revenueCards" class="revenue-grid"></div></div><div class="panel"><p class="eyebrow">GOVERNANCE</p><h2>Value classification</h2><div class="legend-stack"><div><span class="legend-dot forecast"></span><strong>Forecast</strong><p>Business projection based on programme assumptions.</p></div><div><span class="legend-dot ai"></span><strong>AI Estimate</strong><p>Analytical estimate; advisory and not booked revenue.</p></div><div><span class="legend-dot verified"></span><strong>Verified Realised</strong><p>Evidence-backed recovery recorded as realised.</p></div></div></div></div>
+      </section>
+
+      <section id="activitySection" class="section" hidden>
+        <div class="panel"><div class="panel-head"><div><p class="eyebrow">AUDITABILITY</p><h2>User, AI and operational activity</h2></div><button id="activityRefresh" class="btn ghost">Refresh</button></div><div id="activityFull" class="activity-list"></div></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="projectDialog" class="dialog">
+    <form id="projectForm" method="dialog">
+      <div class="panel-head"><div><p class="eyebrow">NEW DELIVERY ITEM</p><h2>Create project</h2></div><button type="button" id="closeProjectDialog" class="icon-btn" aria-label="Close">×</button></div>
+      <div class="form-grid">
+        <label class="span-2">Project name<input name="name" required maxlength="160"></label>
+        <label>Owner<input name="owner" required maxlength="120"></label>
+        <label>Risk<select name="risk"><option>medium</option><option>low</option><option>high</option><option>critical</option></select></label>
+        <label>Budget (ZAR)<input name="budget" type="number" min="0" step="1000"></label>
+        <label>Status<select name="status"><option value="active">Active</option><option value="at-risk">At risk</option><option value="delayed">Delayed</option></select></label>
+        <label class="span-2">Next milestone<input name="nextMilestone" maxlength="180"></label>
+      </div>
+      <p id="projectFormMessage" class="form-message" role="alert"></p>
+      <div class="dialog-actions"><button type="button" id="cancelProject" class="btn ghost">Cancel</button><button type="submit" class="btn primary">Create project</button></div>
+    </form>
+  </dialog>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
