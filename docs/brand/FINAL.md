@@ -1,0 +1,1 @@
+The active Pyrneo logo uses the supplied wordmark and transparent presentation.
