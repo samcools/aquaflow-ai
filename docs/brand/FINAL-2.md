@@ -1,0 +1,1 @@
+Supplied Pyrneo wordmark only.
