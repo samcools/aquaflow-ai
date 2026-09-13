@@ -46,6 +46,11 @@ httpApp.use((req, res, next) => {
   next();
 });
 
+// Parse normal API JSON at the outer gateway so pre-app routers such as the
+// governed voice command layer receive the same request body as the core app.
+// express.json ignores text/csv, so the CSV ingestion parser below is unaffected.
+httpApp.use(express.json({ limit:'1mb' }));
+
 const csvBody = express.text({ type: ['text/csv', 'text/plain'], limit: '2mb' });
 
 function importContext(req, res) {
@@ -77,17 +82,7 @@ httpApp.post('/api/imports/csv/preview', auth, csvBody, (req, res) => {
   const { resource, parsed, validation, unknownHeaders } = context;
   const valid = validation.filter(row => row.valid);
   const invalid = validation.filter(row => !row.valid);
-  res.json({
-    resource,
-    headers: parsed.headers,
-    totalRows: validation.length,
-    validRows: valid.length,
-    invalidRows: invalid.length,
-    unknownHeaders,
-    sample: validation.slice(0, 25),
-    canApply: invalid.length === 0 && validation.length > 0,
-    note: unknownHeaders.length ? 'Unknown columns will be ignored during import.' : 'All columns are recognised.'
-  });
+  res.json({ resource, headers:parsed.headers, totalRows:validation.length, validRows:valid.length, invalidRows:invalid.length, unknownHeaders, sample:validation.slice(0,25), canApply:invalid.length===0&&validation.length>0, note:unknownHeaders.length?'Unknown columns will be ignored during import.':'All columns are recognised.' });
 });
 
 httpApp.post('/api/imports/csv/apply', auth, csvBody, (req, res) => {
@@ -97,35 +92,18 @@ httpApp.post('/api/imports/csv/apply', auth, csvBody, (req, res) => {
   const valid = validation.filter(row => row.valid);
   const invalid = validation.filter(row => !row.valid);
   const allowValidOnly = String(req.query.mode || '').toLowerCase() === 'valid-only';
-  if (invalid.length && !allowValidOnly) {
-    return res.status(409).json({ error: 'Import was not applied because one or more rows failed validation.', invalidRows: invalid.length, sample: invalid.slice(0, 25) });
-  }
-  if (!valid.length) return res.status(400).json({ error: 'No valid records are available to import.' });
-
+  if (invalid.length && !allowValidOnly) return res.status(409).json({ error:'Import was not applied because one or more rows failed validation.', invalidRows:invalid.length, sample:invalid.slice(0,25) });
+  if (!valid.length) return res.status(400).json({ error:'No valid records are available to import.' });
   const created = valid.map(entry => store.create(resource, entry.record, req.user, schema.prefix));
-  const importRecord = store.create('imports', {
-    resource,
-    format: 'csv',
-    importedCount: created.length,
-    rejectedCount: invalid.length,
-    ignoredColumns: unknownHeaders,
-    status: invalid.length ? 'completed-with-rejections' : 'completed',
-    importedAt: new Date().toISOString()
-  }, req.user, 'import');
-
-  res.status(201).json({ importId:importRecord.id, resource, imported:created.length, rejected:invalid.length, ignoredColumns:unknownHeaders, createdIds:created.map(record => record.id) });
+  const importRecord = store.create('imports', { resource, format:'csv', importedCount:created.length, rejectedCount:invalid.length, ignoredColumns:unknownHeaders, status:invalid.length?'completed-with-rejections':'completed', importedAt:new Date().toISOString() }, req.user, 'import');
+  res.status(201).json({ importId:importRecord.id, resource, imported:created.length, rejected:invalid.length, ignoredColumns:unknownHeaders, createdIds:created.map(record=>record.id) });
 });
 
 httpApp.get('/api/imports/history', auth, (req, res) => {
-  if (!hasPermission(req.user, 'audit.read') && !hasPermission(req.user, 'project.create') && !hasPermission(req.user, 'meter.create')) {
-    return res.status(403).json({ error: 'You are not authorised to view import history.' });
-  }
+  if (!hasPermission(req.user, 'audit.read') && !hasPermission(req.user, 'project.create') && !hasPermission(req.user, 'meter.create')) return res.status(403).json({ error:'You are not authorised to view import history.' });
   res.json(store.list('imports', req.user.tenantId));
 });
 
-// Evaluate expanded voice commands before the core app. Commands that are not
-// recognised here fall through to the original assistant handler, preserving a
-// single assistant endpoint and the existing create/comment/navigation grammar.
 httpApp.use(buildVoiceRouter({ store, tokenSecret: config.tokenSecret }));
 httpApp.use(app);
 
